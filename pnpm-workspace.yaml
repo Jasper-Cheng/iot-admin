@@ -4,14 +4,10 @@ packages:
   - packages/*
   - packages/@core/base/*
   - packages/@core/ui-kit/*
-  - packages/@core/forward/*
   - packages/@core/*
   - packages/effects/*
-  - packages/business/*
   - apps/*
   - scripts/*
-  - docs
-  - playground
 
 catalog:
   '@ast-grep/napi': ^0.39.9
@@ -31,7 +27,6 @@ catalog:
   '@intlify/unplugin-vue-i18n': ^6.0.8
   '@jspm/generator': ^2.6.2
   '@manypkg/get-packages': ^3.0.0
-  '@nolebase/vitepress-plugin-git-changelog': ^2.18.0
   '@playwright/test': ^1.56.1
   '@pnpm/workspace.read-manifest': ^1000.2.6
   '@stylistic/stylelint-plugin': ^3.1.3
