@@ -1,0 +1,42 @@
+{
+  "auth": {
+    "login": "Login",
+    "register": "Register",
+    "codeLogin": "Code Login",
+    "qrcodeLogin": "Qr Code Login",
+    "forgetPassword": "Forget Password",
+    "profile": "Profile"
+  },
+  "dashboard": {
+    "title": "Dashboard",
+    "analytics": "Analytics",
+    "workspace": "Workspace"
+  },
+  "account": {
+    "title": "Account",
+    "list": "Admin Management",
+    "users": "User Management",
+    "members": "Member Management",
+    "logs": "Operation Logs"
+  },
+  "device": {
+    "title": "Device",
+    "thingModel": "Thing Model",
+    "model": "Device Model",
+    "list": "Device List",
+    "detail": "Device Detail",
+    "network": "Network Info",
+    "message": "Device Message"
+  },
+  "feedback": {
+    "title": "Feedback",
+    "list": "Feedback List"
+  },
+  "system": {
+    "title": "System",
+    "room": "Room Management",
+    "notice": "System Notice",
+    "version": "Version Management"
+  },
+  "about": "About"
+}

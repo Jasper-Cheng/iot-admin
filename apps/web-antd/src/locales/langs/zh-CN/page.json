@@ -1,0 +1,42 @@
+{
+  "auth": {
+    "login": "登录",
+    "register": "注册",
+    "codeLogin": "验证码登录",
+    "qrcodeLogin": "二维码登录",
+    "forgetPassword": "忘记密码",
+    "profile": "个人中心"
+  },
+  "dashboard": {
+    "title": "仪表盘",
+    "analytics": "数据概览",
+    "workspace": "工作台"
+  },
+  "account": {
+    "title": "账号管理",
+    "list": "管理员管理",
+    "users": "用户管理",
+    "members": "成员管理",
+    "logs": "操作日志"
+  },
+  "device": {
+    "title": "设备管理",
+    "thingModel": "物模型管理",
+    "model": "型号管理",
+    "list": "设备列表",
+    "detail": "设备详情",
+    "network": "网络信息",
+    "message": "设备消息"
+  },
+  "feedback": {
+    "title": "意见反馈",
+    "list": "反馈列表"
+  },
+  "system": {
+    "title": "系统管理",
+    "room": "房间管理",
+    "notice": "系统消息",
+    "version": "版本管理"
+  },
+  "about": "关于"
+}
