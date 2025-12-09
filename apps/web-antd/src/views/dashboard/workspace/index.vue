@@ -1,6 +1,5 @@
 <script lang="ts" setup>
 import type {
-  WorkbenchProjectItem,
   WorkbenchQuickNavItem,
   WorkbenchTodoItem,
   WorkbenchTrendItem,
@@ -11,7 +10,6 @@ import { useRouter } from 'vue-router';
 
 import {
   WorkbenchHeader,
-  WorkbenchProject,
   WorkbenchQuickNav,
   WorkbenchTodo,
   WorkbenchTrends,
@@ -61,64 +59,6 @@ const quickNavItems: WorkbenchQuickNavItem[] = [
     icon: 'lucide:bell',
     title: '系统消息',
     url: '/system/notice',
-  },
-];
-
-// 功能模块
-const projectItems: WorkbenchProjectItem[] = [
-  {
-    color: '#1890ff',
-    content: '管理设备入库、绑定、状态监控',
-    date: '核心模块',
-    group: '设备管理',
-    icon: 'lucide:server',
-    title: '设备管理',
-    url: '/device/list',
-  },
-  {
-    color: '#52c41a',
-    content: '定义设备属性、事件、服务',
-    date: '核心模块',
-    group: '物模型',
-    icon: 'lucide:box',
-    title: '物模型管理',
-    url: '/device/thing-model',
-  },
-  {
-    color: '#faad14',
-    content: '管理 App 用户',
-    date: '基础模块',
-    group: '用户中心',
-    icon: 'lucide:users',
-    title: '用户管理',
-    url: '/account/users',
-  },
-  {
-    color: '#722ed1',
-    content: '处理用户反馈和建议',
-    date: '运营模块',
-    group: '反馈中心',
-    icon: 'lucide:message-circle',
-    title: '意见反馈',
-    url: '/feedback/list',
-  },
-  {
-    color: '#eb2f96',
-    content: '发布系统通知和公告',
-    date: '运营模块',
-    group: '消息中心',
-    icon: 'lucide:bell',
-    title: '系统消息',
-    url: '/system/notice',
-  },
-  {
-    color: '#13c2c2',
-    content: '管理 App 版本发布',
-    date: '运营模块',
-    group: '版本管理',
-    icon: 'lucide:git-branch',
-    title: '版本管理',
-    url: '/system/version',
   },
 ];
 
@@ -193,12 +133,12 @@ const trendItems: WorkbenchTrendItem[] = [
 // 统计数据
 const statistics = [
   { title: '今日新增设备', value: 12, suffix: '台' },
-  { title: '今日活跃用户', value: 1280, suffix: '人' },
-  { title: '本周告警数', value: 36, suffix: '条' },
+  { title: '今日在线用户', value: 1280, suffix: '人' },
+  { title: '今日告警', value: 36, suffix: '条' },
   { title: '待处理反馈', value: 15, suffix: '条' },
 ];
 
-function navTo(nav: WorkbenchProjectItem | WorkbenchQuickNavItem) {
+function navTo(nav: WorkbenchQuickNavItem) {
   if (nav.url?.startsWith('/')) {
     router.push(nav.url);
   }
@@ -210,6 +150,7 @@ function navTo(nav: WorkbenchProjectItem | WorkbenchQuickNavItem) {
     <!-- 欢迎头部 -->
     <WorkbenchHeader
       :avatar="userStore.userInfo?.avatar || preferences.app.defaultAvatar"
+      class="[&_.flex.flex-1.justify-end>div]:hidden [&_.flex.flex-1.justify-end]:after:content-['加油！每一天都是新的开始，让我们一起创造更美好的未来！'] [&_.flex.flex-1.justify-end]:after:text-foreground/80 [&_.flex.flex-1.justify-end]:after:text-lg [&_.flex.flex-1.justify-end]:after:font-medium [&_.flex.flex-1.justify-end]:after:text-right [&_.flex.flex-1.justify-end]:after:flex [&_.flex.flex-1.justify-end]:after:items-center"
     >
       <template #title>
         早安, {{ userStore.userInfo?.realName || '管理员' }},
@@ -241,25 +182,19 @@ function navTo(nav: WorkbenchProjectItem | WorkbenchQuickNavItem) {
 
     <div class="mt-5 flex flex-col lg:flex-row">
       <div class="mr-0 w-full lg:mr-4 lg:w-3/5">
-        <!-- 功能模块 -->
-        <WorkbenchProject
-          :items="projectItems"
-          title="功能模块"
-          @click="navTo"
-        />
-        <!-- 最新动态 -->
-        <WorkbenchTrends :items="trendItems" class="mt-5" title="最新动态" />
+        <!-- 待办事项 -->
+        <WorkbenchTodo :items="todoItems" title="待办事项" />
       </div>
       <div class="w-full lg:w-2/5">
         <!-- 快捷导航 -->
         <WorkbenchQuickNav
           :items="quickNavItems"
-          class="mt-5 lg:mt-0"
+          class="mt-5 lg:mt-0 [&_.flex-wrap]:flex-nowrap [&_.flex-wrap>div]:!w-1/6 [&_.flex-wrap>div]:border-b-0 [&_.flex-wrap>div]:pb-8 [&_.flex-wrap>div]:border-r [&_.flex-wrap>div:last-child]:border-r-0 [&_.flex-wrap>div:last-child]:rounded-br-xl [&_.flex-wrap>div:first-child]:rounded-bl-xl"
           title="快捷导航"
           @click="navTo"
         />
-        <!-- 待办事项 -->
-        <WorkbenchTodo :items="todoItems" class="mt-5" title="待办事项" />
+        <!-- 最新动态 -->
+        <WorkbenchTrends :items="trendItems" class="mt-5" title="最新动态" />
       </div>
     </div>
   </div>
