@@ -1,35 +1,22 @@
 import { requestClient } from '#/api/request';
 
 export namespace ThingModelApi {
-  export interface Property {
-    id: string;
-    name: string;
-    type: 'boolean' | 'datetime' | 'enum' | 'float' | 'int' | 'string';
-    unit?: string;
-    min?: number;
-    max?: number;
-    values?: string[];
-  }
-
   export interface ThingModel {
     id: number;
     name: string;
-    code: string;
-    description: string;
-    status: 'draft' | 'published';
-    version: string;
-    deviceCount: number;
-    properties: Property[];
+    description?: string;
+    properties: Record<string, any>; // JSON 格式的属性定义
+    services: string[] | Record<string, any>; // JSON 格式的服务定义
+    events: string[] | Record<string, any>; // JSON 格式的事件定义
     createdAt: string;
-    updatedAt: string;
+    // 扩展字段（用于显示）
+    deviceCount?: number;
   }
 
   export interface ThingModelListParams {
     page?: number;
     pageSize?: number;
     name?: string;
-    code?: string;
-    status?: string;
   }
 
   export interface ThingModelListResult {
@@ -39,11 +26,10 @@ export namespace ThingModelApi {
 
   export interface CreateThingModelParams {
     name: string;
-    code: string;
-    description: string;
-    status: 'draft' | 'published';
-    version: string;
-    properties: Property[];
+    description?: string;
+    properties: Record<string, any>;
+    services: string[] | Record<string, any>;
+    events: string[] | Record<string, any>;
   }
 }
 

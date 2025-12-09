@@ -2,34 +2,20 @@ import type { VbenFormSchema } from '#/adapter/form';
 import type { OnActionClickFn, VxeTableGridOptions } from '#/adapter/vxe-table';
 import type { AccountApi } from '#/api/iot/account';
 
+import { h } from 'vue';
+
+import { Tag } from 'ant-design-vue';
+
 /** 表单 Schema - 用于新增/编辑 */
 export function useFormSchema(): VbenFormSchema[] {
   return [
     {
       component: 'Input',
-      fieldName: 'username',
-      label: '用户名',
+      fieldName: 'nickname',
+      label: '昵称',
       rules: 'required',
       componentProps: {
-        placeholder: '请输入用户名',
-      },
-    },
-    {
-      component: 'Input',
-      fieldName: 'realName',
-      label: '真实姓名',
-      rules: 'required',
-      componentProps: {
-        placeholder: '请输入真实姓名',
-      },
-    },
-    {
-      component: 'Input',
-      fieldName: 'email',
-      label: '邮箱',
-      rules: 'required|email',
-      componentProps: {
-        placeholder: '请输入邮箱',
+        placeholder: '请输入昵称',
       },
     },
     {
@@ -39,6 +25,15 @@ export function useFormSchema(): VbenFormSchema[] {
       rules: 'required',
       componentProps: {
         placeholder: '请输入手机号',
+      },
+    },
+    {
+      component: 'Input',
+      fieldName: 'email',
+      label: '邮箱',
+      rules: 'email',
+      componentProps: {
+        placeholder: '请输入邮箱（可选）',
       },
     },
     {
@@ -54,18 +49,32 @@ export function useFormSchema(): VbenFormSchema[] {
       },
     },
     {
-      component: 'RadioGroup',
+      component: 'Select',
       componentProps: {
-        buttonStyle: 'solid',
         options: [
-          { label: '启用', value: 'active' },
-          { label: '禁用', value: 'disabled' },
+          { label: '管理员', value: 'admin' },
+          { label: '普通用户', value: 'user' },
         ],
-        optionType: 'button',
+        placeholder: '请选择角色',
       },
-      defaultValue: 'active',
-      fieldName: 'status',
-      label: '状态',
+      defaultValue: 'admin',
+      fieldName: 'role',
+      label: '角色',
+      rules: 'required',
+    },
+    {
+      component: 'Select',
+      componentProps: {
+        options: [
+          { label: '男', value: 'male' },
+          { label: '女', value: 'female' },
+          { label: '其他', value: 'other' },
+        ],
+        placeholder: '请选择性别',
+      },
+      defaultValue: 'other',
+      fieldName: 'gender',
+      label: '性别',
     },
   ];
 }
@@ -75,19 +84,28 @@ export function useGridFormSchema(): VbenFormSchema[] {
   return [
     {
       component: 'Input',
-      fieldName: 'username',
-      label: '用户名',
+      fieldName: 'nickname',
+      label: '昵称',
       componentProps: {
-        placeholder: '请输入用户名',
+        placeholder: '请输入昵称',
         allowClear: true,
       },
     },
     {
       component: 'Input',
-      fieldName: 'realName',
-      label: '真实姓名',
+      fieldName: 'phone',
+      label: '手机号',
       componentProps: {
-        placeholder: '请输入真实姓名',
+        placeholder: '请输入手机号',
+        allowClear: true,
+      },
+    },
+    {
+      component: 'Input',
+      fieldName: 'email',
+      label: '邮箱',
+      componentProps: {
+        placeholder: '请输入邮箱',
         allowClear: true,
       },
     },
@@ -96,13 +114,13 @@ export function useGridFormSchema(): VbenFormSchema[] {
       componentProps: {
         allowClear: true,
         options: [
-          { label: '启用', value: 'active' },
-          { label: '禁用', value: 'disabled' },
+          { label: '管理员', value: 'admin' },
+          { label: '普通用户', value: 'user' },
         ],
-        placeholder: '请选择状态',
+        placeholder: '请选择角色',
       },
-      fieldName: 'status',
-      label: '状态',
+      fieldName: 'role',
+      label: '角色',
     },
   ];
 }
@@ -122,19 +140,17 @@ export function useColumns<T = AccountApi.Admin>(
       width: 80,
     },
     {
-      field: 'username',
-      title: '用户名',
-      minWidth: 120,
+      cellRender: {
+        name: 'CellImage',
+      },
+      field: 'avatar',
+      title: '头像',
+      width: 80,
     },
     {
-      field: 'realName',
-      title: '真实姓名',
+      field: 'nickname',
+      title: '昵称',
       minWidth: 120,
-    },
-    {
-      field: 'email',
-      title: '邮箱',
-      minWidth: 180,
     },
     {
       field: 'phone',
@@ -142,22 +158,36 @@ export function useColumns<T = AccountApi.Admin>(
       width: 140,
     },
     {
-      cellRender: {
-        attrs: {
-          beforeChange: onStatusChange,
-          checkedValue: 'active',
-          unCheckedValue: 'disabled',
-        },
-        name: onStatusChange ? 'CellSwitch' : 'CellTag',
-      },
-      field: 'status',
-      title: '状态',
-      width: 100,
+      field: 'email',
+      title: '邮箱',
+      minWidth: 180,
     },
     {
-      field: 'lastLoginTime',
-      title: '最后登录',
-      width: 180,
+      field: 'role',
+      title: '角色',
+      width: 100,
+      slots: {
+        default: ({ row }) => {
+          const roleText = row.role === 'admin' ? '管理员' : '普通用户';
+          const roleColor = row.role === 'admin' ? 'red' : 'blue';
+          return h(Tag, { color: roleColor }, () => roleText);
+        },
+      },
+    },
+    {
+      field: 'gender',
+      title: '性别',
+      width: 80,
+      slots: {
+        default: ({ row }) => {
+          const genderMap: Record<string, string> = {
+            male: '男',
+            female: '女',
+            other: '其他',
+          };
+          return genderMap[row.gender] || '其他';
+        },
+      },
     },
     {
       field: 'createdAt',
@@ -168,7 +198,7 @@ export function useColumns<T = AccountApi.Admin>(
       align: 'center',
       cellRender: {
         attrs: {
-          nameField: 'realName',
+          nameField: 'nickname',
           nameTitle: '管理员',
           onClick: onActionClick,
         },

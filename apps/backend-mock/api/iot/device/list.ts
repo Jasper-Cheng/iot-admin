@@ -1,70 +1,96 @@
 import { usePageResponseSuccess } from '../../../utils/response';
 
-// Mock 设备数据
+// Mock 设备数据（基于新的 device 表结构）
 const MOCK_DEVICES = [
   {
     id: 1,
-    sn: 'DEV-2024-001',
-    name: '智能温控器A',
+    accountId: 3,
+    accountName: '张三',
     modelId: 1,
-    modelName: '温控器 T100',
+    modelName: '温度传感器',
+    thingModelId: 1,
+    name: '客厅温度传感器',
+    sn: 'TEMP001-2024-001',
     status: 'online',
-    lastOnlineTime: '2024-12-03 10:30:00',
+    familyIds: [1],
+    familyNames: ['我的家'],
     createdAt: '2024-01-15 09:00:00',
-    roomId: 1,
-    roomName: '客厅',
   },
   {
     id: 2,
-    sn: 'DEV-2024-002',
-    name: '智能灯泡B',
+    accountId: 4,
+    accountName: '李四',
     modelId: 2,
-    modelName: '智能灯泡 L200',
+    modelName: '湿度传感器',
+    thingModelId: 2,
+    name: '卧室湿度传感器',
+    sn: 'HUM001-2024-001',
     status: 'offline',
-    lastOnlineTime: '2024-12-02 18:00:00',
+    familyIds: [2],
+    familyNames: ['李四的家'],
     createdAt: '2024-02-20 14:30:00',
-    roomId: 2,
-    roomName: '卧室',
   },
   {
     id: 3,
-    sn: 'DEV-2024-003',
-    name: '智能插座C',
+    accountId: 3,
+    accountName: '张三',
     modelId: 3,
-    modelName: '智能插座 S300',
-    status: 'online',
-    lastOnlineTime: '2024-12-03 11:00:00',
+    modelName: '环境监测器',
+    thingModelId: 3,
+    name: '客厅环境监测器',
+    sn: 'ENV001-2024-001',
+    status: 'bound',
+    familyIds: [1],
+    familyNames: ['我的家'],
     createdAt: '2024-03-10 10:00:00',
-    roomId: 1,
-    roomName: '客厅',
   },
   {
     id: 4,
-    sn: 'DEV-2024-004',
-    name: '智能门锁D',
+    accountId: 5,
+    accountName: '王五',
     modelId: 4,
-    modelName: '智能门锁 K400',
+    modelName: '室内空气质量监测器',
+    thingModelId: 4,
+    name: '主卧空气质量监测器',
+    sn: 'M701001-2024-001',
     status: 'online',
-    lastOnlineTime: '2024-12-03 09:45:00',
+    familyIds: [1],
+    familyNames: ['我的家'],
     createdAt: '2024-04-05 16:20:00',
-    roomId: null,
-    roomName: null,
   },
   {
     id: 5,
-    sn: 'DEV-2024-005',
-    name: '智能空调E',
-    modelId: 5,
-    modelName: '智能空调 A500',
+    accountId: 6,
+    accountName: '赵六',
+    modelId: 1,
+    modelName: '温度传感器',
+    thingModelId: 1,
+    name: '书房温度传感器',
+    sn: 'TEMP001-2024-002',
     status: 'fault',
-    lastOnlineTime: '2024-12-01 08:00:00',
+    familyIds: [3],
+    familyNames: ['赵六的家'],
     createdAt: '2024-05-12 11:10:00',
-    roomId: 3,
-    roomName: '书房',
   },
 ];
 
 export default eventHandler(async (event) => {
-  const { page = 1, pageSize = 10 } = getQuery(event);
-  return usePageResponseSuccess(page, pageSize, MOCK_DEVICES);
+  const { page = 1, pageSize = 10, sn, name, modelId, status } = getQuery(event);
+  
+  let filtered = MOCK_DEVICES;
+  
+  if (sn) {
+    filtered = filtered.filter((item) => item.sn.includes(sn as string));
+  }
+  if (name) {
+    filtered = filtered.filter((item) => item.name.includes(name as string));
+  }
+  if (modelId) {
+    filtered = filtered.filter((item) => item.modelId === Number(modelId));
+  }
+  if (status) {
+    filtered = filtered.filter((item) => item.status === status);
+  }
+  
+  return usePageResponseSuccess(page, pageSize, filtered);
 });

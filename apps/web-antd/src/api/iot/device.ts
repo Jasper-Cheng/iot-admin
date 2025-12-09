@@ -3,19 +3,18 @@ import { requestClient } from '#/api/request';
 export namespace DeviceApi {
   export interface Device {
     id: number;
-    sn: string;
-    name: string;
+    accountId?: number;
     modelId: number;
-    modelName: string;
+    modelName?: string;
     thingModelId?: number;
-    status: 'fault' | 'offline' | 'online';
-    lastOnlineTime: string;
+    name: string;
+    sn: string;
+    status: 'unconfigured' | 'configured' | 'unbound' | 'bound' | 'offline' | 'online' | 'fault';
     createdAt: string;
-    roomId: null | number;
-    roomName: null | string;
-    firmware?: string;
-    mac?: string;
-    properties?: Record<string, any>;
+    // 扩展字段（用于显示）
+    accountName?: string;
+    familyIds?: number[];
+    familyNames?: string[];
   }
 
   export interface DeviceListParams {
@@ -35,28 +34,29 @@ export namespace DeviceApi {
   export interface NetworkInfo {
     id: number;
     deviceId: number;
-    deviceSn: string;
-    deviceName: string;
-    type: 'ble' | 'wifi' | 'zigbee';
-    ssid: null | string;
-    mac: string;
-    ip: null | string;
-    rssi: number;
-    signalStrength: 'excellent' | 'fair' | 'good' | 'weak';
-    lastConnectedAt: string;
+    deviceSn?: string;
+    deviceName?: string;
+    netType: string; // 'wifi' | 'ble' | 'cellular' | 'zigbee'
+    name?: string; // 网络名称（SSID 或蓝牙名称）
+    ip?: string;
+    mac?: string;
+    rssi?: number;
+    connectState: 0 | 1 | 2; // 0=断开, 1=连接中, 2=已连接
+    extra?: Record<string, any>;
+    lastUpdate: string;
   }
 
   export interface DeviceMessage {
     id: number;
     deviceId: number;
-    deviceSn: string;
-    deviceName: string;
-    type: 'alarm' | 'event' | 'fault' | 'offline';
-    level: 'error' | 'info' | 'warning';
-    title: string;
-    content: string;
-    isRead: boolean;
+    deviceSn?: string;
+    deviceName?: string;
+    level: 'low' | 'normal' | 'error' | 'fatal';
+    status: 'new' | 'read';
+    message?: string;
+    detail?: Record<string, any>;
     createdAt: string;
+    updatedAt?: string;
   }
 }
 

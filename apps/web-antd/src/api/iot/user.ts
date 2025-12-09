@@ -5,12 +5,15 @@ export namespace UserApi {
     id: number;
     nickname: string;
     phone: string;
-    avatar: string;
-    status: 'active' | 'disabled';
-    deviceCount: number;
-    homeCount: number;
+    email?: string;
+    avatar?: string;
+    unionid?: string;
+    gender: 'male' | 'female' | 'other';
+    role: 'user' | 'admin';
+    currentFamilyId?: number;
+    deviceCount?: number;
+    familyCount?: number;
     createdAt: string;
-    lastActiveTime: string;
   }
 
   export interface UserListParams {
@@ -18,7 +21,8 @@ export namespace UserApi {
     pageSize?: number;
     nickname?: string;
     phone?: string;
-    status?: string;
+    email?: string;
+    gender?: 'male' | 'female' | 'other';
   }
 
   export interface UserListResult {

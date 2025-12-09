@@ -1,17 +1,19 @@
 import { requestClient } from '#/api/request';
 
 export namespace NoticeApi {
-  export type NoticeType = 'activity' | 'feature' | 'security' | 'system';
-  export type NoticeStatus = 'draft' | 'published';
+  export type NoticeType = 'notification' | 'announcement' | 'alert' | 'maintenance' | 'update';
+  export type NoticePriority = 'low' | 'normal' | 'high' | 'urgent';
 
   export interface Notice {
     id: number;
     title: string;
     content: string;
     type: NoticeType;
-    status: NoticeStatus;
-    publishTime: null | string;
+    priority: NoticePriority;
+    platforms: string[]; // ['android', 'ios', 'web']
+    extra?: Record<string, any>;
     createdAt: string;
+    updatedAt?: string;
   }
 
   export interface NoticeListParams {
@@ -19,7 +21,8 @@ export namespace NoticeApi {
     pageSize?: number;
     title?: string;
     type?: NoticeType;
-    status?: NoticeStatus;
+    priority?: NoticePriority;
+    platform?: string;
   }
 
   export interface NoticeListResult {
@@ -31,7 +34,9 @@ export namespace NoticeApi {
     title: string;
     content: string;
     type: NoticeType;
-    status: NoticeStatus;
+    priority?: NoticePriority;
+    platforms: string[];
+    extra?: Record<string, any>;
   }
 }
 

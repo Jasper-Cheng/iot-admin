@@ -16,7 +16,6 @@
     "title": "账号管理",
     "list": "管理员管理",
     "users": "用户管理",
-    "members": "成员管理",
     "logs": "操作日志"
   },
   "device": {
@@ -34,7 +33,7 @@
   },
   "system": {
     "title": "系统管理",
-    "room": "房间管理",
+    "family": "家庭管理",
     "notice": "系统消息",
     "version": "版本管理"
   },

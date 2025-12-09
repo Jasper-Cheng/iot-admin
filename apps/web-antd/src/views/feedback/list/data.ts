@@ -11,10 +11,19 @@ export function useGridFormSchema(): VbenFormSchema[] {
   return [
     {
       component: 'Input',
-      fieldName: 'userName',
+      fieldName: 'accountName',
       label: '用户',
       componentProps: {
         placeholder: '请输入用户名',
+        allowClear: true,
+      },
+    },
+    {
+      component: 'Input',
+      fieldName: 'name',
+      label: '反馈人姓名',
+      componentProps: {
+        placeholder: '请输入反馈人姓名',
         allowClear: true,
       },
     },
@@ -24,8 +33,10 @@ export function useGridFormSchema(): VbenFormSchema[] {
         allowClear: true,
         options: [
           { label: 'Bug反馈', value: 'bug' },
-          { label: '功能建议', value: 'suggestion' },
+          { label: '功能建议', value: 'feature' },
+          { label: '改进建议', value: 'improvement' },
           { label: '投诉', value: 'complaint' },
+          { label: '表扬', value: 'praise' },
           { label: '其他', value: 'other' },
         ],
         placeholder: '请选择类型',
@@ -41,19 +52,36 @@ export function useGridFormSchema(): VbenFormSchema[] {
           { label: '待处理', value: 'pending' },
           { label: '处理中', value: 'processing' },
           { label: '已解决', value: 'resolved' },
+          { label: '已拒绝', value: 'rejected' },
+          { label: '已关闭', value: 'closed' },
         ],
         placeholder: '请选择状态',
       },
       fieldName: 'status',
       label: '状态',
     },
+    {
+      component: 'Select',
+      componentProps: {
+        allowClear: true,
+        options: [
+          { label: 'Web', value: 'web' },
+          { label: 'App', value: 'app' },
+        ],
+        placeholder: '请选择来源',
+      },
+      fieldName: 'source',
+      label: '来源',
+    },
   ];
 }
 
 const typeMap: Record<string, { color: string; text: string }> = {
   bug: { text: 'Bug反馈', color: 'red' },
-  suggestion: { text: '功能建议', color: 'blue' },
+  feature: { text: '功能建议', color: 'blue' },
+  improvement: { text: '改进建议', color: 'cyan' },
   complaint: { text: '投诉', color: 'orange' },
+  praise: { text: '表扬', color: 'green' },
   other: { text: '其他', color: 'default' },
 };
 
@@ -61,6 +89,8 @@ const statusMap: Record<string, { color: string; text: string }> = {
   pending: { text: '待处理', color: 'default' },
   processing: { text: '处理中', color: 'processing' },
   resolved: { text: '已解决', color: 'success' },
+  rejected: { text: '已拒绝', color: 'error' },
+  closed: { text: '已关闭', color: 'default' },
 };
 
 /** 表格列定义 */
@@ -74,8 +104,13 @@ export function useColumns<T = FeedbackApi.Feedback>(
       width: 80,
     },
     {
-      field: 'userName',
+      field: 'accountName',
       title: '用户',
+      width: 100,
+    },
+    {
+      field: 'name',
+      title: '反馈人',
       width: 100,
     },
     {
@@ -93,32 +128,20 @@ export function useColumns<T = FeedbackApi.Feedback>(
       },
     },
     {
-      field: 'title',
-      title: '标题',
-      minWidth: 150,
-    },
-    {
       field: 'content',
-      title: '内容',
+      title: '反馈内容',
       minWidth: 200,
       showOverflow: true,
     },
     {
-      field: 'images',
-      title: '图片',
-      width: 120,
+      field: 'source',
+      title: '来源',
+      width: 80,
       slots: {
         default: ({ row }) => {
-          if (!row.images || row.images.length === 0) {
-            return h('span', { class: 'text-gray-400' }, '无');
-          }
-          return h(Space, {}, () =>
-            row.images
-              .slice(0, 2)
-              .map((img: string) =>
-                h(Image, { src: img, width: 40, height: 40 }),
-              ),
-          );
+          const sourceText = row.source === 'web' ? 'Web' : 'App';
+          const sourceColor = row.source === 'web' ? 'blue' : 'green';
+          return h(Tag, { color: sourceColor }, () => sourceText);
         },
       },
     },
@@ -137,13 +160,13 @@ export function useColumns<T = FeedbackApi.Feedback>(
       },
     },
     {
-      field: 'reply',
+      field: 'replay',
       title: '回复',
       width: 150,
       showOverflow: true,
       slots: {
         default: ({ row }) =>
-          row.reply || h('span', { class: 'text-gray-400' }, '未回复'),
+          row.replay || h('span', { class: 'text-gray-400' }, '未回复'),
       },
     },
     {
@@ -180,6 +203,8 @@ export function useReplyFormSchema(): VbenFormSchema[] {
         options: [
           { label: '处理中', value: 'processing' },
           { label: '已解决', value: 'resolved' },
+          { label: '已拒绝', value: 'rejected' },
+          { label: '已关闭', value: 'closed' },
         ],
         optionType: 'button',
       },
@@ -189,7 +214,7 @@ export function useReplyFormSchema(): VbenFormSchema[] {
     },
     {
       component: 'Textarea',
-      fieldName: 'reply',
+      fieldName: 'replay',
       label: '回复内容',
       rules: 'required',
       componentProps: {

@@ -22,15 +22,45 @@ export function useFormSchema(): VbenFormSchema[] {
       component: 'Select',
       componentProps: {
         options: [
-          { label: '系统通知', value: 'system' },
-          { label: '功能更新', value: 'feature' },
-          { label: '安全提醒', value: 'security' },
-          { label: '活动公告', value: 'activity' },
+          { label: '通知', value: 'notification' },
+          { label: '公告', value: 'announcement' },
+          { label: '警告', value: 'alert' },
+          { label: '维护', value: 'maintenance' },
+          { label: '更新', value: 'update' },
         ],
         placeholder: '请选择类型',
       },
       fieldName: 'type',
       label: '类型',
+      rules: 'required',
+    },
+    {
+      component: 'Select',
+      componentProps: {
+        options: [
+          { label: '低', value: 'low' },
+          { label: '普通', value: 'normal' },
+          { label: '高', value: 'high' },
+          { label: '紧急', value: 'urgent' },
+        ],
+        placeholder: '请选择优先级',
+      },
+      defaultValue: 'normal',
+      fieldName: 'priority',
+      label: '优先级',
+    },
+    {
+      component: 'CheckboxGroup',
+      componentProps: {
+        options: [
+          { label: 'Web', value: 'web' },
+          { label: 'Android', value: 'android' },
+          { label: 'iOS', value: 'ios' },
+        ],
+      },
+      defaultValue: ['web'],
+      fieldName: 'platforms',
+      label: '目标平台',
       rules: 'required',
     },
     {
@@ -42,20 +72,6 @@ export function useFormSchema(): VbenFormSchema[] {
         placeholder: '请输入内容',
         rows: 6,
       },
-    },
-    {
-      component: 'RadioGroup',
-      componentProps: {
-        buttonStyle: 'solid',
-        options: [
-          { label: '草稿', value: 'draft' },
-          { label: '发布', value: 'published' },
-        ],
-        optionType: 'button',
-      },
-      defaultValue: 'draft',
-      fieldName: 'status',
-      label: '状态',
     },
   ];
 }
@@ -77,10 +93,11 @@ export function useGridFormSchema(): VbenFormSchema[] {
       componentProps: {
         allowClear: true,
         options: [
-          { label: '系统通知', value: 'system' },
-          { label: '功能更新', value: 'feature' },
-          { label: '安全提醒', value: 'security' },
-          { label: '活动公告', value: 'activity' },
+          { label: '通知', value: 'notification' },
+          { label: '公告', value: 'announcement' },
+          { label: '警告', value: 'alert' },
+          { label: '维护', value: 'maintenance' },
+          { label: '更新', value: 'update' },
         ],
         placeholder: '请选择类型',
       },
@@ -92,27 +109,46 @@ export function useGridFormSchema(): VbenFormSchema[] {
       componentProps: {
         allowClear: true,
         options: [
-          { label: '草稿', value: 'draft' },
-          { label: '已发布', value: 'published' },
+          { label: '低', value: 'low' },
+          { label: '普通', value: 'normal' },
+          { label: '高', value: 'high' },
+          { label: '紧急', value: 'urgent' },
         ],
-        placeholder: '请选择状态',
+        placeholder: '请选择优先级',
       },
-      fieldName: 'status',
-      label: '状态',
+      fieldName: 'priority',
+      label: '优先级',
+    },
+    {
+      component: 'Select',
+      componentProps: {
+        allowClear: true,
+        options: [
+          { label: 'Web', value: 'web' },
+          { label: 'Android', value: 'android' },
+          { label: 'iOS', value: 'ios' },
+        ],
+        placeholder: '请选择平台',
+      },
+      fieldName: 'platform',
+      label: '平台',
     },
   ];
 }
 
 const typeMap: Record<string, { color: string; text: string }> = {
-  system: { text: '系统通知', color: 'blue' },
-  feature: { text: '功能更新', color: 'green' },
-  security: { text: '安全提醒', color: 'orange' },
-  activity: { text: '活动公告', color: 'purple' },
+  notification: { text: '通知', color: 'blue' },
+  announcement: { text: '公告', color: 'green' },
+  alert: { text: '警告', color: 'orange' },
+  maintenance: { text: '维护', color: 'purple' },
+  update: { text: '更新', color: 'cyan' },
 };
 
-const statusMap: Record<string, { color: string; text: string }> = {
-  draft: { text: '草稿', color: 'default' },
-  published: { text: '已发布', color: 'success' },
+const priorityMap: Record<string, { color: string; text: string }> = {
+  low: { text: '低', color: 'default' },
+  normal: { text: '普通', color: 'blue' },
+  high: { text: '高', color: 'orange' },
+  urgent: { text: '紧急', color: 'red' },
 };
 
 /** 表格列定义 */
@@ -145,33 +181,43 @@ export function useColumns<T = NoticeApi.Notice>(
       },
     },
     {
-      field: 'content',
-      title: '内容',
-      minWidth: 250,
-      showOverflow: true,
-    },
-    {
-      field: 'status',
-      title: '状态',
+      field: 'priority',
+      title: '优先级',
       width: 100,
       slots: {
         default: ({ row }) => {
-          const status = statusMap[row.status] || {
-            text: row.status,
+          const priority = priorityMap[row.priority] || {
+            text: row.priority,
             color: 'default',
           };
-          return h(Tag, { color: status.color }, () => status.text);
+          return h(Tag, { color: priority.color }, () => priority.text);
         },
       },
     },
     {
-      field: 'publishTime',
-      title: '发布时间',
-      width: 180,
+      field: 'platforms',
+      title: '目标平台',
+      width: 150,
       slots: {
-        default: ({ row }) =>
-          row.publishTime || h('span', { class: 'text-gray-400' }, '未发布'),
+        default: ({ row }) => {
+          if (!row.platforms || row.platforms.length === 0) {
+            return h('span', { class: 'text-gray-400' }, '未设置');
+          }
+          return h(
+            'div',
+            { class: 'flex gap-1' },
+            row.platforms.map((p: string) =>
+              h(Tag, { color: p === 'web' ? 'blue' : p === 'android' ? 'green' : 'cyan' }, () => p.toUpperCase()),
+            ),
+          );
+        },
       },
+    },
+    {
+      field: 'content',
+      title: '内容',
+      minWidth: 250,
+      showOverflow: true,
     },
     {
       field: 'createdAt',

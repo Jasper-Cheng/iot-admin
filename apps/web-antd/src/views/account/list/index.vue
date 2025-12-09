@@ -83,17 +83,8 @@ function confirm(content: string, title: string) {
 }
 
 async function onStatusChange(newStatus: string, row: AccountApi.Admin) {
-  const statusText = newStatus === 'active' ? '启用' : '禁用';
-  try {
-    await confirm(
-      `确定要${statusText}管理员【${row.realName}】吗？`,
-      '切换状态',
-    );
-    await updateAdmin(row.id, { status: newStatus as 'active' | 'disabled' });
-    return true;
-  } catch {
-    return false;
-  }
+  // 注意：新数据结构中没有 status 字段，此函数保留用于兼容性，但实际不会调用
+  return false;
 }
 
 function onEdit(row: AccountApi.Admin) {
@@ -103,7 +94,7 @@ function onEdit(row: AccountApi.Admin) {
 function onDelete(row: AccountApi.Admin) {
   Modal.confirm({
     title: '确认删除',
-    content: `确定要删除管理员【${row.realName}】吗？`,
+    content: `确定要删除管理员【${row.nickname}】吗？`,
     okType: 'danger',
     onOk: async () => {
       await deleteAdmin(row.id);

@@ -13,12 +13,12 @@ const routes: RouteRecordRaw[] = [
     path: '/system',
     children: [
       {
-        name: 'RoomManage',
-        path: '/system/room',
-        component: () => import('#/views/system/room/index.vue'),
+        name: 'FamilyManage',
+        path: '/system/family',
+        component: () => import('#/views/system/family/index.vue'),
         meta: {
-          icon: 'lucide:home',
-          title: $t('page.system.room'),
+          icon: 'lucide:users-round',
+          title: $t('page.system.family'),
         },
       },
       {

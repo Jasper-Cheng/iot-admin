@@ -1,29 +1,35 @@
 import { requestClient } from '#/api/request';
 
 export namespace FeedbackApi {
-  export type FeedbackStatus = 'pending' | 'processing' | 'resolved';
-  export type FeedbackType = 'bug' | 'complaint' | 'other' | 'suggestion';
+  export type FeedbackStatus = 'pending' | 'processing' | 'resolved' | 'rejected' | 'closed';
+  export type FeedbackType = 'bug' | 'feature' | 'improvement' | 'complaint' | 'praise' | 'other';
+  export type FeedbackSource = 'web' | 'app';
 
   export interface Feedback {
     id: number;
-    userId: number;
-    userName: string;
+    accountId: number;
+    accountName?: string; // 扩展字段，用于显示
+    name?: string;
     type: FeedbackType;
-    title: string;
     content: string;
-    images: string[];
     status: FeedbackStatus;
-    reply: null | string;
+    source: FeedbackSource;
+    contactInfo?: string;
+    replay?: string;
+    processedAt?: string;
+    extra?: Record<string, any>;
     createdAt: string;
-    updatedAt: string;
+    updatedAt?: string;
   }
 
   export interface FeedbackListParams {
     page?: number;
     pageSize?: number;
-    userName?: string;
+    accountName?: string;
+    name?: string;
     type?: FeedbackType;
     status?: FeedbackStatus;
+    source?: FeedbackSource;
   }
 
   export interface FeedbackListResult {
@@ -33,7 +39,7 @@ export namespace FeedbackApi {
 
   export interface ReplyFeedbackParams {
     status: FeedbackStatus;
-    reply: string;
+    replay: string;
   }
 }
 

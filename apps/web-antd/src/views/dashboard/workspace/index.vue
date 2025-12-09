@@ -86,7 +86,7 @@ const projectItems: WorkbenchProjectItem[] = [
   },
   {
     color: '#faad14',
-    content: '管理 App 用户和家庭成员',
+    content: '管理 App 用户',
     date: '基础模块',
     group: '用户中心',
     icon: 'lucide:users',

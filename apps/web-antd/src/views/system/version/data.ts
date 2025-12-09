@@ -11,7 +11,7 @@ export function useFormSchema(): VbenFormSchema[] {
   return [
     {
       component: 'Input',
-      fieldName: 'version',
+      fieldName: 'versionCode',
       label: '版本号',
       rules: 'required',
       componentProps: {
@@ -19,12 +19,21 @@ export function useFormSchema(): VbenFormSchema[] {
       },
     },
     {
+      component: 'Input',
+      fieldName: 'versionName',
+      label: '版本名称',
+      rules: 'required',
+      componentProps: {
+        placeholder: '如 FastIoT v2.1.0',
+      },
+    },
+    {
       component: 'RadioGroup',
       componentProps: {
         buttonStyle: 'solid',
         options: [
-          { label: 'Android', value: 'android' },
-          { label: 'iOS', value: 'ios' },
+          { label: 'Web', value: 'web' },
+          { label: 'App', value: 'app' },
         ],
         optionType: 'button',
       },
@@ -34,42 +43,53 @@ export function useFormSchema(): VbenFormSchema[] {
     },
     {
       component: 'Input',
-      fieldName: 'downloadUrl',
-      label: '下载地址',
+      fieldName: 'title',
+      label: '版本标题',
       rules: 'required',
       componentProps: {
-        placeholder: '请输入下载链接',
+        placeholder: '请输入版本标题',
       },
     },
     {
       component: 'Textarea',
       fieldName: 'description',
-      label: '更新说明',
+      label: '版本描述',
       rules: 'required',
       componentProps: {
-        placeholder: '请输入更新说明，每行一条',
+        placeholder: '请输入版本描述，每行一条',
         rows: 5,
       },
     },
     {
+      component: 'Input',
+      fieldName: 'downloadUrl',
+      label: '下载地址',
+      componentProps: {
+        placeholder: '请输入下载链接（可选）',
+      },
+    },
+    {
+      component: 'InputNumber',
+      fieldName: 'fileSize',
+      label: '文件大小（字节）',
+      componentProps: {
+        placeholder: '请输入文件大小',
+        min: 0,
+      },
+    },
+    {
       component: 'Switch',
-      fieldName: 'forceUpdate',
+      fieldName: 'isForceUpdate',
       label: '强制更新',
       defaultValue: false,
     },
     {
-      component: 'RadioGroup',
+      component: 'Input',
+      fieldName: 'minSupportedVersion',
+      label: '最低支持版本',
       componentProps: {
-        buttonStyle: 'solid',
-        options: [
-          { label: '草稿', value: 'draft' },
-          { label: '发布', value: 'published' },
-        ],
-        optionType: 'button',
+        placeholder: '如 2.0.0（可选）',
       },
-      defaultValue: 'draft',
-      fieldName: 'status',
-      label: '状态',
     },
   ];
 }
@@ -79,7 +99,7 @@ export function useGridFormSchema(): VbenFormSchema[] {
   return [
     {
       component: 'Input',
-      fieldName: 'version',
+      fieldName: 'versionCode',
       label: '版本号',
       componentProps: {
         placeholder: '请输入版本号',
@@ -91,38 +111,20 @@ export function useGridFormSchema(): VbenFormSchema[] {
       componentProps: {
         allowClear: true,
         options: [
-          { label: 'Android', value: 'android' },
-          { label: 'iOS', value: 'ios' },
+          { label: 'Web', value: 'web' },
+          { label: 'App', value: 'app' },
         ],
         placeholder: '请选择平台',
       },
       fieldName: 'platform',
       label: '平台',
     },
-    {
-      component: 'Select',
-      componentProps: {
-        allowClear: true,
-        options: [
-          { label: '草稿', value: 'draft' },
-          { label: '已发布', value: 'published' },
-        ],
-        placeholder: '请选择状态',
-      },
-      fieldName: 'status',
-      label: '状态',
-    },
   ];
 }
 
 const platformMap: Record<string, { color: string; text: string }> = {
-  android: { text: 'Android', color: 'green' },
-  ios: { text: 'iOS', color: 'blue' },
-};
-
-const statusMap: Record<string, { color: string; text: string }> = {
-  draft: { text: '草稿', color: 'default' },
-  published: { text: '已发布', color: 'success' },
+  web: { text: 'Web', color: 'blue' },
+  app: { text: 'App', color: 'green' },
 };
 
 /** 表格列定义 */
@@ -136,9 +138,14 @@ export function useColumns<T = VersionApi.AppVersion>(
       width: 80,
     },
     {
-      field: 'version',
+      field: 'versionCode',
       title: '版本号',
       width: 120,
+    },
+    {
+      field: 'versionName',
+      title: '版本名称',
+      width: 150,
     },
     {
       field: 'platform',
@@ -155,44 +162,38 @@ export function useColumns<T = VersionApi.AppVersion>(
       },
     },
     {
+      field: 'title',
+      title: '版本标题',
+      minWidth: 150,
+    },
+    {
       field: 'description',
-      title: '更新说明',
+      title: '版本描述',
       minWidth: 250,
       showOverflow: true,
     },
     {
-      field: 'forceUpdate',
+      field: 'isForceUpdate',
       title: '强制更新',
       width: 100,
       slots: {
         default: ({ row }) => {
-          return row.forceUpdate
+          return row.isForceUpdate
             ? h(Tag, { color: 'red' }, () => '是')
             : h(Tag, { color: 'default' }, () => '否');
         },
       },
     },
     {
-      field: 'status',
-      title: '状态',
-      width: 100,
+      field: 'fileSize',
+      title: '文件大小',
+      width: 120,
       slots: {
         default: ({ row }) => {
-          const status = statusMap[row.status] || {
-            text: row.status,
-            color: 'default',
-          };
-          return h(Tag, { color: status.color }, () => status.text);
+          if (!row.fileSize) return h('span', { class: 'text-gray-400' }, '未设置');
+          const sizeMB = (row.fileSize / 1024 / 1024).toFixed(2);
+          return `${sizeMB} MB`;
         },
-      },
-    },
-    {
-      field: 'publishTime',
-      title: '发布时间',
-      width: 180,
-      slots: {
-        default: ({ row }) =>
-          row.publishTime || h('span', { class: 'text-gray-400' }, '未发布'),
       },
     },
     {
@@ -204,7 +205,7 @@ export function useColumns<T = VersionApi.AppVersion>(
       align: 'center',
       cellRender: {
         attrs: {
-          nameField: 'version',
+          nameField: 'versionName',
           nameTitle: '版本',
           onClick: onActionClick,
         },

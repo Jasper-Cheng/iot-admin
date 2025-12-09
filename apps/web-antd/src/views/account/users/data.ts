@@ -2,6 +2,10 @@ import type { VbenFormSchema } from '#/adapter/form';
 import type { OnActionClickFn, VxeTableGridOptions } from '#/adapter/vxe-table';
 import type { UserApi } from '#/api/iot/user';
 
+import { h } from 'vue';
+
+import { Tag } from 'ant-design-vue';
+
 /** 搜索表单 Schema */
 export function useGridFormSchema(): VbenFormSchema[] {
   return [
@@ -24,17 +28,27 @@ export function useGridFormSchema(): VbenFormSchema[] {
       },
     },
     {
+      component: 'Input',
+      fieldName: 'email',
+      label: '邮箱',
+      componentProps: {
+        placeholder: '请输入邮箱',
+        allowClear: true,
+      },
+    },
+    {
       component: 'Select',
       componentProps: {
         allowClear: true,
         options: [
-          { label: '正常', value: 'active' },
-          { label: '禁用', value: 'disabled' },
+          { label: '男', value: 'male' },
+          { label: '女', value: 'female' },
+          { label: '其他', value: 'other' },
         ],
-        placeholder: '请选择状态',
+        placeholder: '请选择性别',
       },
-      fieldName: 'status',
-      label: '状态',
+      fieldName: 'gender',
+      label: '性别',
     },
   ];
 }
@@ -77,27 +91,41 @@ export function useColumns<T = UserApi.AppUser>(
       width: 100,
     },
     {
-      field: 'homeCount',
+      field: 'familyCount',
       title: '家庭数',
       width: 100,
     },
     {
-      cellRender: {
-        attrs: {
-          beforeChange: onStatusChange,
-          checkedValue: 'active',
-          unCheckedValue: 'disabled',
-        },
-        name: onStatusChange ? 'CellSwitch' : 'CellTag',
-      },
-      field: 'status',
-      title: '状态',
-      width: 100,
+      field: 'email',
+      title: '邮箱',
+      minWidth: 180,
     },
     {
-      field: 'lastActiveTime',
-      title: '最后活跃',
-      width: 180,
+      field: 'gender',
+      title: '性别',
+      width: 80,
+      slots: {
+        default: ({ row }) => {
+          const genderMap: Record<string, string> = {
+            male: '男',
+            female: '女',
+            other: '其他',
+          };
+          return genderMap[row.gender] || '其他';
+        },
+      },
+    },
+    {
+      field: 'role',
+      title: '角色',
+      width: 100,
+      slots: {
+        default: ({ row }) => {
+          const roleText = row.role === 'admin' ? '管理员' : '普通用户';
+          const roleColor = row.role === 'admin' ? 'red' : 'blue';
+          return h(Tag, { color: roleColor }, () => roleText);
+        },
+      },
     },
     {
       field: 'createdAt',

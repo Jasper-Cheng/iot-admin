@@ -32,8 +32,12 @@ export function useGridFormSchema(): VbenFormSchema[] {
       componentProps: {
         allowClear: true,
         options: [
-          { label: '在线', value: 'online' },
+          { label: '未配置', value: 'unconfigured' },
+          { label: '已配置', value: 'configured' },
+          { label: '未绑定', value: 'unbound' },
+          { label: '已绑定', value: 'bound' },
           { label: '离线', value: 'offline' },
+          { label: '在线', value: 'online' },
           { label: '故障', value: 'fault' },
         ],
         placeholder: '请选择状态',
@@ -45,8 +49,12 @@ export function useGridFormSchema(): VbenFormSchema[] {
 }
 
 const statusMap: Record<string, { color: string; text: string }> = {
-  online: { text: '在线', color: 'success' },
+  unconfigured: { text: '未配置', color: 'default' },
+  configured: { text: '已配置', color: 'processing' },
+  unbound: { text: '未绑定', color: 'warning' },
+  bound: { text: '已绑定', color: 'processing' },
   offline: { text: '离线', color: 'default' },
+  online: { text: '在线', color: 'success' },
   fault: { text: '故障', color: 'error' },
 };
 
@@ -90,21 +98,29 @@ export function useColumns<T = DeviceApi.Device>(
       },
     },
     {
-      field: 'roomName',
-      title: '所属房间',
+      field: 'accountName',
+      title: '所属账号',
       width: 120,
       slots: {
         default: ({ row }) => {
           return (
-            row.roomName || h('span', { class: 'text-gray-400' }, '未绑定')
+            row.accountName || h('span', { class: 'text-gray-400' }, '未绑定')
           );
         },
       },
     },
     {
-      field: 'lastOnlineTime',
-      title: '最后在线',
-      width: 180,
+      field: 'familyNames',
+      title: '所属家庭',
+      width: 150,
+      slots: {
+        default: ({ row }) => {
+          if (!row.familyNames || row.familyNames.length === 0) {
+            return h('span', { class: 'text-gray-400' }, '未绑定');
+          }
+          return h('span', {}, row.familyNames.join(', '));
+        },
+      },
     },
     {
       field: 'createdAt',

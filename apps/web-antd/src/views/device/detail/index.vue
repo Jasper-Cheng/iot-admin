@@ -35,12 +35,11 @@ const device = ref<DeviceApi.Device | null>(null);
 const messages = ref<DeviceApi.DeviceMessage[]>([]);
 const messagesLoading = ref(false);
 
-// Mock 房间数据
-const rooms = [
-  { id: 1, name: '客厅' },
-  { id: 2, name: '卧室' },
-  { id: 3, name: '书房' },
-  { id: 4, name: '厨房' },
+// Mock 家庭数据
+const families = [
+  { id: 1, name: '我的家' },
+  { id: 2, name: '李四的家' },
+  { id: 3, name: '赵六的家' },
 ];
 
 const statusMap: Record<string, { color: string; text: string }> = {
@@ -95,11 +94,23 @@ function goBack() {
   router.push('/device/list');
 }
 
-async function onRoomChange(roomId: number) {
-  message.success('房间绑定成功');
+async function onFamilyChange(familyId: number) {
+  message.success('家庭绑定成功');
   if (device.value) {
-    device.value.roomId = roomId;
-    device.value.roomName = rooms.find((r) => r.id === roomId)?.name || null;
+    // 更新设备关联的家庭信息
+    if (!device.value.familyIds) {
+      device.value.familyIds = [];
+    }
+    if (!device.value.familyIds.includes(familyId)) {
+      device.value.familyIds.push(familyId);
+    }
+    if (!device.value.familyNames) {
+      device.value.familyNames = [];
+    }
+    const familyName = families.find((f) => f.id === familyId)?.name;
+    if (familyName && !device.value.familyNames.includes(familyName)) {
+      device.value.familyNames.push(familyName);
+    }
   }
 }
 
@@ -166,8 +177,8 @@ watch(deviceId, () => {
               <DescriptionsItem label="MAC地址">
                 {{ device.mac || '-' }}
               </DescriptionsItem>
-              <DescriptionsItem label="所属房间">
-                {{ device.roomName || '未绑定' }}
+              <DescriptionsItem label="所属家庭">
+                {{ device.familyNames?.join(', ') || '未绑定' }}
               </DescriptionsItem>
               <DescriptionsItem label="最后在线">
                 {{ device.lastOnlineTime }}
@@ -251,31 +262,38 @@ watch(deviceId, () => {
             </Spin>
           </TabPane>
 
-          <!-- 房间绑定 Tab -->
-          <TabPane key="room" tab="房间绑定">
+          <!-- 家庭绑定 Tab -->
+          <TabPane key="family" tab="家庭绑定">
             <div class="py-4">
               <div class="mb-4">
-                <span class="mr-2">当前房间:</span>
-                <Tag v-if="device.roomName" color="blue">
-                  {{ device.roomName }}
-                </Tag>
+                <span class="mr-2">当前家庭:</span>
+                <template v-if="device.familyNames && device.familyNames.length > 0">
+                  <Tag
+                    v-for="(familyName, idx) in device.familyNames"
+                    :key="idx"
+                    color="blue"
+                    class="mr-2"
+                  >
+                    {{ familyName }}
+                  </Tag>
+                </template>
                 <span v-else class="text-gray-400">未绑定</span>
               </div>
               <div class="flex items-center gap-4">
-                <span>绑定到房间:</span>
+                <span>添加到家庭:</span>
                 <Select
-                  :value="device.roomId"
-                  placeholder="请选择房间"
+                  :value="device.familyIds?.[0]"
+                  placeholder="请选择家庭"
                   style="width: 200px"
                   allow-clear
-                  @change="onRoomChange"
+                  @change="onFamilyChange"
                 >
                   <Select.Option
-                    v-for="room in rooms"
-                    :key="room.id"
-                    :value="room.id"
+                    v-for="family in families"
+                    :key="family.id"
+                    :value="family.id"
                   >
-                    {{ room.name }}
+                    {{ family.name }}
                   </Select.Option>
                 </Select>
               </div>

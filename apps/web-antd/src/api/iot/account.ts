@@ -3,21 +3,25 @@ import { requestClient } from '#/api/request';
 export namespace AccountApi {
   export interface Admin {
     id: number;
-    username: string;
-    realName: string;
-    email: string;
+    password?: string;
+    nickname: string;
+    unionid?: string;
+    gender: 'male' | 'female' | 'other';
     phone: string;
-    status: 'active' | 'disabled';
-    lastLoginTime: string;
+    email?: string;
+    avatar?: string;
+    role: 'user' | 'admin';
+    currentFamilyId?: number;
     createdAt: string;
   }
 
   export interface AdminListParams {
     page?: number;
     pageSize?: number;
-    username?: string;
-    realName?: string;
-    status?: string;
+    nickname?: string;
+    phone?: string;
+    email?: string;
+    role?: 'user' | 'admin';
   }
 
   export interface AdminListResult {
@@ -26,19 +30,21 @@ export namespace AccountApi {
   }
 
   export interface CreateAdminParams {
-    username: string;
-    realName: string;
-    email: string;
+    nickname: string;
     phone: string;
+    email?: string;
     password: string;
-    status: 'active' | 'disabled';
+    role?: 'user' | 'admin';
+    gender?: 'male' | 'female' | 'other';
   }
 
   export interface UpdateAdminParams {
-    realName?: string;
+    nickname?: string;
     email?: string;
     phone?: string;
-    status?: 'active' | 'disabled';
+    avatar?: string;
+    gender?: 'male' | 'female' | 'other';
+    role?: 'user' | 'admin';
   }
 }
 

@@ -31,15 +31,6 @@ const routes: RouteRecordRaw[] = [
         },
       },
       {
-        name: 'MemberList',
-        path: '/account/members',
-        component: () => import('#/views/account/members/index.vue'),
-        meta: {
-          icon: 'lucide:user-check',
-          title: $t('page.account.members'),
-        },
-      },
-      {
         name: 'OperationLog',
         path: '/account/logs',
         component: () => import('#/views/account/logs/index.vue'),

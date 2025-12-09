@@ -1,27 +1,29 @@
 import { requestClient } from '#/api/request';
 
 export namespace VersionApi {
-  export type Platform = 'android' | 'ios';
-  export type VersionStatus = 'draft' | 'published';
+  export type Platform = 'web' | 'app';
 
   export interface AppVersion {
     id: number;
-    version: string;
+    versionCode: string;
+    versionName: string;
     platform: Platform;
-    downloadUrl: string;
+    title: string;
     description: string;
-    forceUpdate: boolean;
-    status: VersionStatus;
-    publishTime: null | string;
+    downloadUrl?: string;
+    fileSize?: number;
+    isForceUpdate: boolean;
+    minSupportedVersion?: string;
+    extra?: Record<string, any>;
     createdAt: string;
+    updatedAt?: string;
   }
 
   export interface VersionListParams {
     page?: number;
     pageSize?: number;
-    version?: string;
+    versionCode?: string;
     platform?: Platform;
-    status?: VersionStatus;
   }
 
   export interface VersionListResult {
@@ -30,12 +32,16 @@ export namespace VersionApi {
   }
 
   export interface CreateVersionParams {
-    version: string;
+    versionCode: string;
+    versionName: string;
     platform: Platform;
-    downloadUrl: string;
+    title: string;
     description: string;
-    forceUpdate: boolean;
-    status: VersionStatus;
+    downloadUrl?: string;
+    fileSize?: number;
+    isForceUpdate?: boolean;
+    minSupportedVersion?: string;
+    extra?: Record<string, any>;
   }
 }
 

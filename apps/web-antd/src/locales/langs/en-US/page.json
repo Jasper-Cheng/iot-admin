@@ -16,7 +16,6 @@
     "title": "Account",
     "list": "Admin Management",
     "users": "User Management",
-    "members": "Member Management",
     "logs": "Operation Logs"
   },
   "device": {
@@ -34,7 +33,7 @@
   },
   "system": {
     "title": "System",
-    "room": "Room Management",
+    "family": "Family Management",
     "notice": "System Notice",
     "version": "Version Management"
   },

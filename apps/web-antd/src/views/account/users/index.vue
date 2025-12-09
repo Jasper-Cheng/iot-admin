@@ -10,7 +10,7 @@ import { Page } from '@vben/common-ui';
 import { message, Modal } from 'ant-design-vue';
 
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
-import { getUserList, updateUserStatus } from '#/api/iot/user';
+import { getUserList } from '#/api/iot/user';
 
 import { useColumns, useGridFormSchema } from './data';
 
@@ -72,15 +72,8 @@ function confirm(content: string, title: string) {
 }
 
 async function onStatusChange(newStatus: string, row: UserApi.AppUser) {
-  const statusText = newStatus === 'active' ? '启用' : '禁用';
-  try {
-    await confirm(`确定要${statusText}用户【${row.nickname}】吗？`, '切换状态');
-    await updateUserStatus(row.id, newStatus as 'active' | 'disabled');
-    message.success(`${statusText}成功`);
-    return true;
-  } catch {
-    return false;
-  }
+  // 注意：新数据结构中没有 status 字段，此函数保留用于兼容性，但实际不会调用
+  return false;
 }
 
 function onView(row: UserApi.AppUser) {
@@ -88,8 +81,11 @@ function onView(row: UserApi.AppUser) {
     title: `用户详情 - ${row.nickname}`,
     content: `
       手机号: ${row.phone}
-      设备数: ${row.deviceCount}
-      家庭数: ${row.homeCount}
+      邮箱: ${row.email || '未设置'}
+      性别: ${row.gender === 'male' ? '男' : row.gender === 'female' ? '女' : '其他'}
+      角色: ${row.role === 'admin' ? '管理员' : '普通用户'}
+      设备数: ${row.deviceCount || 0}
+      家庭数: ${row.familyCount || 0}
       注册时间: ${row.createdAt}
     `,
     width: 500,
