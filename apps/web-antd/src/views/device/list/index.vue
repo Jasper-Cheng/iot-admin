@@ -1,11 +1,9 @@
 <script lang="ts" setup>
-import type {
-  OnActionClickParams,
-  VxeTableGridOptions,
-} from '#/adapter/vxe-table';
+import type { VxeTableGridOptions } from '#/adapter/vxe-table';
 import type { DeviceApi } from '#/api/iot/device';
 
-import { useRouter } from 'vue-router';
+import { onMounted, watch } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
 
 import { Page } from '@vben/common-ui';
 
@@ -16,7 +14,32 @@ import { deleteDevice, getDeviceList } from '#/api/iot/device';
 
 import { useColumns, useGridFormSchema } from './data';
 
+// 定义操作点击参数类型
+interface OnActionClickParams<T> {
+  code: string;
+  row: T;
+}
+
+const route = useRoute();
 const router = useRouter();
+
+// 从路由查询参数获取初始筛选条件
+function getFormValuesFromQuery() {
+  const query = route.query;
+  const values: Record<string, any> = {};
+  
+  if (query.status) {
+    values.status = query.status;
+  }
+  if (query.sn) {
+    values.sn = query.sn;
+  }
+  if (query.name) {
+    values.name = query.name;
+  }
+  
+  return values;
+}
 
 const [Grid, gridApi] = useVbenVxeGrid({
   formOptions: {
@@ -91,6 +114,41 @@ function onDelete(row: DeviceApi.Device) {
 function onRefresh() {
   gridApi.query();
 }
+
+// 监听路由查询参数变化，更新表单值并触发查询
+watch(
+  () => route.query,
+  () => {
+    const values = getFormValuesFromQuery();
+    
+    // 更新表单值
+    if (Object.keys(values).length > 0) {
+      gridApi.formApi.setValues(values);
+      // 延迟触发查询，确保表单值已更新
+      setTimeout(() => {
+        gridApi.reload(values);
+      }, 100);
+    } else {
+      // 如果查询参数为空，清空表单并重新查询
+      gridApi.formApi.setValues({});
+      gridApi.reload({});
+    }
+  },
+  { immediate: false },
+);
+
+// 页面加载时，如果有查询参数，自动设置表单值并触发查询
+onMounted(async () => {
+  const initialValues = getFormValuesFromQuery();
+  if (Object.keys(initialValues).length > 0) {
+    // 等待表单 API 准备就绪
+    await new Promise((resolve) => setTimeout(resolve, 200));
+    // 确保表单值已设置
+    await gridApi.formApi.setValues(initialValues);
+    // 触发查询
+    gridApi.reload(initialValues);
+  }
+});
 </script>
 
 <template>

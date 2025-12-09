@@ -1,17 +1,12 @@
 <script lang="ts" setup>
-import type {
-  WorkbenchQuickNavItem,
-  WorkbenchTodoItem,
-  WorkbenchTrendItem,
-} from '@vben/common-ui';
+import type { WorkbenchTrendItem } from '@vben/common-ui';
+import type { FeedbackApi } from '#/api/iot/feedback';
 
-import { ref } from 'vue';
+import { onMounted, ref } from 'vue';
 import { useRouter } from 'vue-router';
 
 import {
   WorkbenchHeader,
-  WorkbenchQuickNav,
-  WorkbenchTodo,
   WorkbenchTrends,
 } from '@vben/common-ui';
 import { preferences } from '@vben/preferences';
@@ -19,76 +14,73 @@ import { useUserStore } from '@vben/stores';
 
 import { Card, Statistic, Tag } from 'ant-design-vue';
 
+import { getFeedbackList } from '#/api/iot/feedback';
+
 const userStore = useUserStore();
 const router = useRouter();
 
-// 快捷导航 - 物联网管理
-const quickNavItems: WorkbenchQuickNavItem[] = [
-  {
-    color: '#1890ff',
-    icon: 'lucide:cpu',
-    title: '设备列表',
-    url: '/device/list',
-  },
-  {
-    color: '#52c41a',
-    icon: 'lucide:box',
-    title: '物模型',
-    url: '/device/thing-model',
-  },
-  {
-    color: '#faad14',
-    icon: 'lucide:component',
-    title: '型号管理',
-    url: '/device/model',
-  },
-  {
-    color: '#722ed1',
-    icon: 'lucide:users',
-    title: '用户管理',
-    url: '/account/users',
-  },
-  {
-    color: '#eb2f96',
-    icon: 'lucide:message-square',
-    title: '意见反馈',
-    url: '/feedback/list',
-  },
-  {
-    color: '#13c2c2',
-    icon: 'lucide:bell',
-    title: '系统消息',
-    url: '/system/notice',
-  },
-];
+// 待办反馈列表
+const pendingFeedbacks = ref<FeedbackApi.Feedback[]>([]);
+const loadingFeedbacks = ref(false);
 
-// 待办事项
-const todoItems = ref<WorkbenchTodoItem[]>([
-  {
-    completed: false,
-    content: '有 15 条用户反馈待处理，请及时回复',
-    date: '今天',
-    title: '处理用户反馈',
-  },
-  {
-    completed: false,
-    content: '12 个设备告警未处理，请检查设备状态',
-    date: '今天',
-    title: '处理设备告警',
-  },
-  {
-    completed: true,
-    content: 'Android v2.1.0 已发布，iOS 版本待审核',
-    date: '昨天',
-    title: '发布新版本',
-  },
-  {
-    completed: false,
-    content: '检查服务器性能，优化接口响应时间',
-    date: '本周',
-    title: '系统性能优化',
-  },
-]);
+// 加载未处理的反馈
+async function loadPendingFeedbacks() {
+  loadingFeedbacks.value = true;
+  try {
+    const res = await getFeedbackList({
+      status: 'pending',
+      page: 1,
+      pageSize: 10,
+    });
+    pendingFeedbacks.value = res.items || [];
+  } catch {
+    // 忽略错误
+  } finally {
+    loadingFeedbacks.value = false;
+  }
+}
+
+// 反馈类型映射
+const feedbackTypeMap: Record<FeedbackApi.FeedbackType, { text: string; color: string }> = {
+  bug: { text: 'Bug', color: 'red' },
+  feature: { text: '功能', color: 'blue' },
+  improvement: { text: '改进', color: 'cyan' },
+  complaint: { text: '投诉', color: 'orange' },
+  praise: { text: '表扬', color: 'green' },
+  other: { text: '其他', color: 'default' },
+};
+
+// 格式化日期
+function formatDate(dateStr: string) {
+  const date = new Date(dateStr);
+  const now = new Date();
+  const diff = now.getTime() - date.getTime();
+  const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+  
+  if (days === 0) {
+    const hours = Math.floor(diff / (1000 * 60 * 60));
+    if (hours === 0) {
+      const minutes = Math.floor(diff / (1000 * 60));
+      return minutes <= 0 ? '刚刚' : `${minutes}分钟前`;
+    }
+    return `${hours}小时前`;
+  } else if (days === 1) {
+    return '昨天';
+  } else if (days < 7) {
+    return `${days}天前`;
+  } else {
+    return date.toLocaleDateString('zh-CN', { month: 'short', day: 'numeric' });
+  }
+}
+
+// 跳转到反馈列表
+function goToFeedback() {
+  router.push(`/feedback/list`);
+}
+
+onMounted(() => {
+  loadPendingFeedbacks();
+});
 
 // 最新动态
 const trendItems: WorkbenchTrendItem[] = [
@@ -132,17 +124,18 @@ const trendItems: WorkbenchTrendItem[] = [
 
 // 统计数据
 const statistics = [
-  { title: '今日新增设备', value: 12, suffix: '台' },
+  { title: '未绑定设备', value: 12, suffix: '台', url: '/device/list?status=unbound' },
   { title: '今日在线用户', value: 1280, suffix: '人' },
   { title: '今日告警', value: 36, suffix: '条' },
   { title: '待处理反馈', value: 15, suffix: '条' },
 ];
 
-function navTo(nav: WorkbenchQuickNavItem) {
-  if (nav.url?.startsWith('/')) {
-    router.push(nav.url);
+function onStatisticClick(stat: typeof statistics[0]) {
+  if (stat.url) {
+    router.push(stat.url);
   }
 }
+
 </script>
 
 <template>
@@ -170,7 +163,9 @@ function navTo(nav: WorkbenchQuickNavItem) {
         v-for="stat in statistics"
         :key="stat.title"
         :bordered="false"
+        :class="{ 'cursor-pointer hover:shadow-md transition-shadow': stat.url }"
         size="small"
+        @click="stat.url ? onStatisticClick(stat) : undefined"
       >
         <Statistic
           :title="stat.title"
@@ -182,19 +177,50 @@ function navTo(nav: WorkbenchQuickNavItem) {
 
     <div class="mt-5 flex flex-col lg:flex-row">
       <div class="mr-0 w-full lg:mr-4 lg:w-3/5">
-        <!-- 待办事项 -->
-        <WorkbenchTodo :items="todoItems" title="待办事项" />
+        <!-- 待办反馈 -->
+        <Card>
+          <template #title>
+            <span class="text-lg">待办反馈</span>
+          </template>
+          <div class="p-5 pt-0">
+            <ul v-if="pendingFeedbacks.length > 0" class="divide-border w-full divide-y" role="list">
+              <li
+                v-for="feedback in pendingFeedbacks"
+                :key="feedback.id"
+                class="flex cursor-pointer justify-between gap-x-6 py-5 rounded-lg px-2"
+                @click="goToFeedback"
+              >
+                <div class="flex min-w-0 flex-auto items-center gap-x-4">
+                  <div class="min-w-0 flex-auto">
+                    <div class="flex items-center gap-2">
+                      <p class="text-foreground text-sm font-semibold leading-6">
+                        {{ feedback.accountName || feedback.name || '匿名用户' }}
+                      </p>
+                      <Tag :color="feedbackTypeMap[feedback.type]?.color || 'default'">
+                        {{ feedbackTypeMap[feedback.type]?.text || '其他' }}
+                      </Tag>
+                    </div>
+                    <p class="text-foreground/80 mt-1 line-clamp-2 text-xs leading-5">
+                      {{ feedback.content }}
+                    </p>
+                  </div>
+                </div>
+                <div class="hidden h-full shrink-0 sm:flex sm:flex-col sm:items-end">
+                  <span class="text-foreground/80 mt-6 text-xs leading-6">
+                    {{ formatDate(feedback.createdAt) }}
+                  </span>
+                </div>
+              </li>
+            </ul>
+            <div v-else class="py-10 text-center text-foreground/60 text-sm">
+              暂无待处理反馈
+            </div>
+          </div>
+        </Card>
       </div>
       <div class="w-full lg:w-2/5">
-        <!-- 快捷导航 -->
-        <WorkbenchQuickNav
-          :items="quickNavItems"
-          class="mt-5 lg:mt-0 [&_.flex-wrap]:flex-nowrap [&_.flex-wrap>div]:!w-1/6 [&_.flex-wrap>div]:border-b-0 [&_.flex-wrap>div]:pb-8 [&_.flex-wrap>div]:border-r [&_.flex-wrap>div:last-child]:border-r-0 [&_.flex-wrap>div:last-child]:rounded-br-xl [&_.flex-wrap>div:first-child]:rounded-bl-xl"
-          title="快捷导航"
-          @click="navTo"
-        />
         <!-- 最新动态 -->
-        <WorkbenchTrends :items="trendItems" class="mt-5" title="最新动态" />
+        <WorkbenchTrends :items="trendItems" class="mt-5 lg:mt-0" title="最新动态" />
       </div>
     </div>
   </div>
