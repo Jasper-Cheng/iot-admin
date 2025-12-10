@@ -245,10 +245,10 @@ function updateActiveName(val: string) {
 }
 
 function handleMenuItemClick(data: MenuItemClicked) {
-  const { collapse, mode } = props;
-  // 只在水平模式或侧边栏折叠时才清空打开的菜单
-  // 当侧边栏展开时，点击其他导航项不清空已打开的菜单
-  if (mode === 'horizontal' || collapse) {
+  const { mode } = props;
+  // 只在水平模式时才清空打开的菜单
+  // 垂直模式下，无论侧边栏是否折叠，点击菜单项都不清空已打开的菜单
+  if (mode === 'horizontal') {
     openedMenus.value = [];
   }
   const { parentPaths, path } = data;
@@ -353,15 +353,21 @@ function getActivePaths() {
     role="menu"
   >
     <template v-if="mode === 'horizontal' && getSlot.showSlotMore">
-      <template v-for="item in getSlot.slotDefault" :key="item.key">
-        <component :is="item" />
+      <template
+        v-for="(item, index) in getSlot.slotDefault"
+        :key="(item && typeof item === 'object' && 'key' in item ? item.key : index)"
+      >
+        <component v-if="item" :is="item" />
       </template>
       <SubMenu is-sub-menu-more path="sub-menu-more">
         <template #title>
           <Ellipsis class="size-4" />
         </template>
-        <template v-for="item in getSlot.slotMore" :key="item.key">
-          <component :is="item" />
+        <template
+          v-for="(item, index) in getSlot.slotMore"
+          :key="(item && typeof item === 'object' && 'key' in item ? item.key : index)"
+        >
+          <component v-if="item" :is="item" />
         </template>
       </SubMenu>
     </template>
