@@ -67,47 +67,53 @@ const typeMap: Record<string, string> = {
 export function useColumns(): VxeTableGridOptions<DeviceApi.NetworkInfo>['columns'] {
   return [
     {
-      field: 'id',
-      title: 'ID',
-      width: 80,
-    },
-    {
       field: 'deviceSn',
       title: '设备SN',
       width: 150,
+      slots: {
+        default: ({ row }) => row.deviceSn || '-',
+      },
     },
     {
       field: 'deviceName',
       title: '设备名称',
       minWidth: 150,
-    },
-    {
-      field: 'type',
-      title: '连接类型',
-      width: 100,
       slots: {
-        default: ({ row }) => typeMap[row.type] || row.type,
+        default: ({ row }) => row.deviceName || '-',
       },
     },
     {
-      field: 'ssid',
-      title: 'Wi-Fi名称',
+      field: 'netType',
+      title: '网络类型',
+      width: 100,
+      slots: {
+        default: ({ row }) => {
+          return typeMap[row.netType] || row.netType;
+        },
+      },
+    },
+    {
+      field: 'name',
+      title: '网络名称',
       width: 150,
       slots: {
-        default: ({ row }) => row.ssid || '-',
+        default: ({ row }) => row.name || '-',
+      },
+    },
+    {
+      field: 'ip',
+      title: 'IP',
+      width: 130,
+      slots: {
+        default: ({ row }) => row.ip || '-',
       },
     },
     {
       field: 'mac',
-      title: 'MAC地址',
+      title: 'MAC',
       width: 150,
-    },
-    {
-      field: 'ip',
-      title: 'IP地址',
-      width: 130,
       slots: {
-        default: ({ row }) => row.ip || '-',
+        default: ({ row }) => row.mac || '-',
       },
     },
     {
@@ -115,26 +121,30 @@ export function useColumns(): VxeTableGridOptions<DeviceApi.NetworkInfo>['column
       title: 'RSSI',
       width: 100,
       slots: {
-        default: ({ row }) => `${row.rssi} dBm`,
-      },
-    },
-    {
-      field: 'signalStrength',
-      title: '信号强度',
-      width: 100,
-      slots: {
         default: ({ row }) => {
-          const signal = signalMap[row.signalStrength] || {
-            text: row.signalStrength,
-            color: 'default',
-          };
-          return h(Tag, { color: signal.color }, () => signal.text);
+          if (row.rssi === undefined || row.rssi === null) {
+            return '-';
+          }
+          return `${row.rssi} dBm`;
         },
       },
     },
     {
-      field: 'lastConnectedAt',
-      title: '最后连接',
+      field: 'extra',
+      title: '额外信息',
+      minWidth: 200,
+      slots: {
+        default: ({ row }) => {
+          if (!row.extra || Object.keys(row.extra).length === 0) {
+            return '-';
+          }
+          return JSON.stringify(row.extra);
+        },
+      },
+    },
+    {
+      field: 'lastUpdate',
+      title: '更新时间',
       width: 180,
     },
   ];
