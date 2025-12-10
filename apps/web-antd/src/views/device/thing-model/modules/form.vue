@@ -145,7 +145,7 @@ const getDrawerTitle = computed(() => {
 <template>
   <Drawer :title="getDrawerTitle" class="w-[1200px]">
     <div class="space-y-6">
-      <Form />
+    <Form />
       <div class="border-t pt-4">
         <PropertiesEditor v-model="propertiesValue" />
       </div>

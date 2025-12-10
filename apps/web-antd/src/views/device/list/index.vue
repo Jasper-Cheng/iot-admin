@@ -53,11 +53,15 @@ const [Grid, gridApi] = useVbenVxeGrid({
     proxyConfig: {
       ajax: {
         query: async ({ page }, formValues) => {
-          return await getDeviceList({
+          const result = await getDeviceList({
             page: page.currentPage,
             pageSize: page.pageSize,
             ...formValues,
           });
+          return {
+            items: result.items || [],
+            total: result.total || 0,
+          };
         },
       },
     },
