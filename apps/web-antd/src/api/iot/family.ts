@@ -8,7 +8,9 @@ export namespace FamilyApi {
     description?: string;
     inviteCode?: string;
     memberCount?: number; // 扩展字段，用于显示
+    memberIds?: number[]; // 成员ID列表
     deviceCount?: number; // 扩展字段，用于显示
+    deviceIds?: number[]; // 设备ID列表
     createdAt: string;
     updatedAt?: string;
   }
@@ -28,6 +30,8 @@ export namespace FamilyApi {
     pageSize?: number;
     name?: string;
     inviteCode?: string;
+    memberId?: number;
+    deviceId?: number;
   }
 
   export interface FamilyListResult {

@@ -28,7 +28,11 @@ export function useFormSchema(): VbenFormSchema[] {
       fieldName: 'inviteCode',
       label: '邀请码',
       componentProps: {
-        placeholder: '请输入邀请码（可选，系统可自动生成）',
+        placeholder: '系统自动生成',
+        disabled: true,
+      },
+      dependencies: {
+        show: (values) => !!values.id, // 只在编辑时显示
       },
     },
     {
@@ -41,11 +45,14 @@ export function useFormSchema(): VbenFormSchema[] {
       },
     },
     {
-      component: 'Input',
+      component: 'Upload',
       fieldName: 'avatar',
-      label: '家庭头像URL',
+      label: '头像',
       componentProps: {
-        placeholder: '请输入头像URL（可选）',
+        listType: 'picture-card',
+        maxCount: 1,
+        accept: 'image/*',
+        beforeUpload: () => false, // 阻止自动上传，手动处理
       },
     },
   ];
@@ -64,12 +71,25 @@ export function useGridFormSchema(): VbenFormSchema[] {
       },
     },
     {
-      component: 'Input',
-      fieldName: 'inviteCode',
-      label: '邀请码',
+      component: 'InputNumber',
+      fieldName: 'memberId',
+      label: '成员ID',
       componentProps: {
-        placeholder: '请输入邀请码',
+        placeholder: '请输入成员ID',
         allowClear: true,
+        min: 1,
+        style: { width: '100%' },
+      },
+    },
+    {
+      component: 'InputNumber',
+      fieldName: 'deviceId',
+      label: '设备ID',
+      componentProps: {
+        placeholder: '请输入设备ID',
+        allowClear: true,
+        min: 1,
+        style: { width: '100%' },
       },
     },
   ];
@@ -120,23 +140,40 @@ export function useColumns<T = FamilyApi.Family>(
     {
       field: 'memberCount',
       title: '成员数',
-      width: 100,
+      width: 150,
       slots: {
-        default: ({ row }) => row.memberCount || 0,
+        default: ({ row }) => {
+          const count = row.memberCount || 0;
+          const ids = (row as any).memberIds || [];
+          if (ids.length > 0) {
+            return `${count} (${ids.join(', ')})`;
+          }
+          return count;
+        },
       },
     },
     {
       field: 'deviceCount',
       title: '设备数',
-      width: 100,
+      width: 150,
       slots: {
-        default: ({ row }) => row.deviceCount || 0,
+        default: ({ row }) => {
+          const count = row.deviceCount || 0;
+          const ids = (row as any).deviceIds || [];
+          if (ids.length > 0) {
+            return `${count} (${ids.join(', ')})`;
+          }
+          return count;
+        },
       },
     },
     {
-      field: 'createdAt',
-      title: '创建时间',
+      field: 'updatedAt',
+      title: '更新时间',
       width: 180,
+      slots: {
+        default: ({ row }) => row.updatedAt || row.createdAt || '-',
+      },
     },
     {
       align: 'center',
@@ -145,14 +182,14 @@ export function useColumns<T = FamilyApi.Family>(
           nameField: 'name',
           nameTitle: '家庭',
           onClick: onActionClick,
-          actions: ['view', 'edit', 'delete'],
+          actions: ['edit', 'delete'],
         },
         name: 'CellOperation',
       },
       field: 'operation',
       fixed: 'right',
       title: '操作',
-      width: 150,
+      width: 120,
     },
   ];
 }

@@ -66,30 +66,11 @@ function onActionClick(e: OnActionClickParams<FamilyApi.Family>) {
       onEdit(e.row);
       break;
     }
-    case 'view': {
-      onView(e.row);
-      break;
-    }
   }
 }
 
 function onEdit(row: FamilyApi.Family) {
   formDrawerApi.setData(row).open();
-}
-
-function onView(row: FamilyApi.Family) {
-  Modal.info({
-    title: `家庭详情 - ${row.name}`,
-    content: `
-      家庭名称: ${row.name}
-      邀请码: ${row.inviteCode || '未设置'}
-      描述: ${row.description || '无'}
-      成员数: ${row.memberCount || 0}
-      设备数: ${row.deviceCount || 0}
-      创建时间: ${row.createdAt}
-    `,
-    width: 500,
-  });
 }
 
 function onDelete(row: FamilyApi.Family) {
