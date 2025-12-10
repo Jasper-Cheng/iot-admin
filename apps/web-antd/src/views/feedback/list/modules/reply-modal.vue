@@ -8,8 +8,6 @@ import { useVbenModal } from '@vben/common-ui';
 import {
   Descriptions,
   DescriptionsItem,
-  Image,
-  Space,
   Tag,
 } from 'ant-design-vue';
 

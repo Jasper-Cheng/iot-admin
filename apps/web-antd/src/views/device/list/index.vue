@@ -3,9 +3,9 @@ import type { VxeTableGridOptions } from '#/adapter/vxe-table';
 import type { DeviceApi } from '#/api/iot/device';
 
 import { onMounted, watch } from 'vue';
-import { useRoute, useRouter } from 'vue-router';
+import { useRoute } from 'vue-router';
 
-import { Page } from '@vben/common-ui';
+import { Page, useVbenDrawer } from '@vben/common-ui';
 
 import { message, Modal } from 'ant-design-vue';
 
@@ -13,6 +13,7 @@ import { useVbenVxeGrid } from '#/adapter/vxe-table';
 import { deleteDevice, getDeviceList } from '#/api/iot/device';
 
 import { useColumns, useGridFormSchema } from './data';
+import Form from './modules/form.vue'; // eslint-disable-line
 
 // 定义操作点击参数类型
 interface OnActionClickParams<T> {
@@ -21,7 +22,11 @@ interface OnActionClickParams<T> {
 }
 
 const route = useRoute();
-const router = useRouter();
+
+const [FormDrawer, formDrawerApi] = useVbenDrawer({
+  connectedComponent: Form,
+  destroyOnClose: true,
+});
 
 // 从路由查询参数获取初始筛选条件
 function getFormValuesFromQuery() {
@@ -87,19 +92,11 @@ function onActionClick(e: OnActionClickParams<DeviceApi.Device>) {
       onEdit(e.row);
       break;
     }
-    case 'view': {
-      onView(e.row);
-      break;
-    }
   }
 }
 
-function onView(row: DeviceApi.Device) {
-  router.push(`/device/detail/${row.id}`);
-}
-
 function onEdit(row: DeviceApi.Device) {
-  router.push(`/device/detail/${row.id}?tab=basic`);
+  formDrawerApi.setData(row).open();
 }
 
 function onDelete(row: DeviceApi.Device) {
@@ -158,5 +155,6 @@ onMounted(async () => {
 <template>
   <Page auto-content-height title="设备列表" description="查看和管理所有设备">
     <Grid table-title="设备列表" />
+    <FormDrawer @success="onRefresh" />
   </Page>
 </template>

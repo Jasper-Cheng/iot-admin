@@ -141,14 +141,14 @@ export function useColumns<T = DeviceApi.Device>(
           nameField: 'name',
           nameTitle: '设备',
           onClick: onActionClick,
-          actions: ['view', 'edit', 'delete'],
+          actions: ['edit', 'delete'],
         },
         name: 'CellOperation',
       },
       field: 'operation',
       fixed: 'right',
       title: '操作',
-      width: 150,
+      width: 120,
     },
   ];
 }
