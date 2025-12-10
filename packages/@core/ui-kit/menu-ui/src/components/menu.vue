@@ -281,10 +281,7 @@ function close(path: string) {
  * 关闭、折叠菜单
  */
 function closeMenu(path: string, parentPaths: string[]) {
-  if (props.accordion) {
-    openedMenus.value = subMenus.value[path]?.parentPaths ?? [];
-  }
-
+  // 只关闭当前菜单，不影响其他已展开的菜单
   close(path);
 
   emit('close', path, parentPaths);
@@ -297,15 +294,16 @@ function openMenu(path: string, parentPaths: string[]) {
   if (openedMenus.value.includes(path)) {
     return;
   }
-  // 手风琴模式菜单
+  // 手风琴模式菜单 - 只关闭同一父级下的其他菜单
+  // 修改：点击其他菜单项时，不自动关闭已展开的菜单
+  // 只有在用户主动点击已展开的菜单时，才会关闭（在 handleSubMenuClick 中处理）
   if (props.accordion) {
     const activeParentPaths = getActivePaths();
     if (activeParentPaths.includes(path)) {
       parentPaths = activeParentPaths;
     }
-    openedMenus.value = openedMenus.value.filter((path: string) =>
-      parentPaths.includes(path),
-    );
+    // 不再自动关闭其他菜单，让用户可以同时展开多个菜单
+    // 只保留当前菜单的父级路径，确保父级菜单保持展开
   }
   openedMenus.value.push(path);
   emit('open', path, parentPaths);
