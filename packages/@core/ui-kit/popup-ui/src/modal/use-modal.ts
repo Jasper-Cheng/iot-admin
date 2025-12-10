@@ -40,6 +40,10 @@ export function useVbenModal<TParentModalProps extends ModalProps = ModalProps>(
             // 不能直接给 reactive 赋值，会丢失响应
             // 不能用 Object.assign,会丢失 api 的原型函数
             Object.setPrototypeOf(extendedApi, api);
+            // 确保 sharedData 共享
+            if (api.sharedData) {
+              extendedApi.sharedData = api.sharedData;
+            }
           },
           options,
           async reCreateModal() {

@@ -74,6 +74,7 @@ setupVbenVxeTable({
             view: '查看',
             edit: '编辑',
             delete: '删除',
+            reply: '回复',
           };
 
           const isDelete = action === 'delete';

@@ -69,7 +69,7 @@ const MOCK_FEEDBACKS = [
 ];
 
 export default eventHandler(async (event) => {
-  const { page = 1, pageSize = 10, accountName, name, type, status, source } = getQuery(event);
+  const { page = 1, pageSize = 10, accountName, name, type, status, source, hasReply } = getQuery(event);
   
   let filtered = MOCK_FEEDBACKS;
   
@@ -87,6 +87,13 @@ export default eventHandler(async (event) => {
   }
   if (source) {
     filtered = filtered.filter((item) => item.source === source);
+  }
+  if (hasReply !== undefined) {
+    const hasReplyBool = hasReply === 'true' || hasReply === true;
+    filtered = filtered.filter((item) => {
+      const hasReplied = !!item.replay;
+      return hasReplyBool ? hasReplied : !hasReplied;
+    });
   }
   
   return usePageResponseSuccess(page, pageSize, filtered);

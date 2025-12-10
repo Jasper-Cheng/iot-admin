@@ -30,6 +30,7 @@ export namespace FeedbackApi {
     type?: FeedbackType;
     status?: FeedbackStatus;
     source?: FeedbackSource;
+    hasReply?: boolean;
   }
 
   export interface FeedbackListResult {

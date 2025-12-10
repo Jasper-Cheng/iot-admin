@@ -69,7 +69,7 @@ const [Modal, modalApi] = useVbenModal({
       const data = modalApi.getData<FeedbackApi.Feedback>();
       formApi.resetForm();
 
-      if (data) {
+      if (data && Object.keys(data).length > 0) {
         feedback.value = data;
         await nextTick();
         if (data.replay) {
@@ -79,6 +79,8 @@ const [Modal, modalApi] = useVbenModal({
           });
         }
       }
+    } else {
+      feedback.value = undefined;
     }
   },
 });

@@ -62,7 +62,12 @@ function onActionClick(e: OnActionClickParams<FeedbackApi.Feedback>) {
 }
 
 function onView(row: FeedbackApi.Feedback) {
-  replyModalApi.setData(row).open();
+  if (!row) {
+    return;
+  }
+  // 确保数据正确设置并打开弹窗
+  replyModalApi.setData(row);
+  replyModalApi.open();
 }
 
 function onRefresh() {

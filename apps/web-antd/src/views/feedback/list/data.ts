@@ -4,7 +4,7 @@ import type { FeedbackApi } from '#/api/iot/feedback';
 
 import { h } from 'vue';
 
-import { Image, Space, Tag } from 'ant-design-vue';
+import { Tag } from 'ant-design-vue';
 
 interface OnActionClickParams<T> {
   code: string;
@@ -17,13 +17,17 @@ type OnActionClickFn<T> = (e: OnActionClickParams<T>) => void;
 export function useGridFormSchema(): VbenFormSchema[] {
   return [
     {
-      component: 'Input',
-      fieldName: 'accountName',
-      label: '用户',
+      component: 'Select',
       componentProps: {
-        placeholder: '请输入用户名',
         allowClear: true,
+        options: [
+          { label: '已回复', value: true },
+          { label: '未回复', value: false },
+        ],
+        placeholder: '请选择是否回复',
       },
+      fieldName: 'hasReply',
+      label: '是否回复',
     },
     {
       component: 'Input',
@@ -108,22 +112,25 @@ export function useColumns<T = FeedbackApi.Feedback>(
     {
       field: 'id',
       title: 'ID',
-      width: 80,
+      minWidth: 80,
     },
     {
-      field: 'accountName',
-      title: '用户',
-      width: 100,
+      field: 'accountId',
+      title: '反馈人ID',
+      minWidth: 100,
     },
     {
       field: 'name',
       title: '反馈人',
-      width: 100,
+      minWidth: 100,
+      slots: {
+        default: ({ row }) => row.name || h('span', { class: 'text-gray-400' }, '-'),
+      },
     },
     {
       field: 'type',
       title: '类型',
-      width: 100,
+      minWidth: 100,
       slots: {
         default: ({ row }) => {
           const type = typeMap[row.type] || {
@@ -137,25 +144,13 @@ export function useColumns<T = FeedbackApi.Feedback>(
     {
       field: 'content',
       title: '反馈内容',
-      minWidth: 200,
+      minWidth: 150,
       showOverflow: true,
-    },
-    {
-      field: 'source',
-      title: '来源',
-      width: 80,
-      slots: {
-        default: ({ row }) => {
-          const sourceText = row.source === 'web' ? 'Web' : 'App';
-          const sourceColor = row.source === 'web' ? 'blue' : 'green';
-          return h(Tag, { color: sourceColor }, () => sourceText);
-        },
-      },
     },
     {
       field: 'status',
       title: '状态',
-      width: 100,
+      minWidth: 100,
       slots: {
         default: ({ row }) => {
           const status = statusMap[row.status] || {
@@ -167,9 +162,29 @@ export function useColumns<T = FeedbackApi.Feedback>(
       },
     },
     {
+      field: 'source',
+      title: '来源',
+      minWidth: 80,
+      slots: {
+        default: ({ row }) => {
+          const sourceText = row.source === 'web' ? 'Web' : 'App';
+          const sourceColor = row.source === 'web' ? 'blue' : 'green';
+          return h(Tag, { color: sourceColor }, () => sourceText);
+        },
+      },
+    },
+    {
+      field: 'contactInfo',
+      title: '联系方式',
+      minWidth: 120,
+      slots: {
+        default: ({ row }) => row.contactInfo || h('span', { class: 'text-gray-400' }, '-'),
+      },
+    },
+    {
       field: 'replay',
       title: '回复',
-      width: 150,
+      minWidth: 120,
       showOverflow: true,
       slots: {
         default: ({ row }) =>
@@ -177,15 +192,37 @@ export function useColumns<T = FeedbackApi.Feedback>(
       },
     },
     {
+      field: 'processedAt',
+      title: '处理时间',
+      minWidth: 150,
+      slots: {
+        default: ({ row }) => row.processedAt || h('span', { class: 'text-gray-400' }, '-'),
+      },
+    },
+    {
+      field: 'extra',
+      title: '额外信息',
+      minWidth: 120,
+      showOverflow: true,
+      slots: {
+        default: ({ row }) => {
+          if (!row.extra || Object.keys(row.extra).length === 0) {
+            return h('span', { class: 'text-gray-400' }, '-');
+          }
+          return JSON.stringify(row.extra);
+        },
+      },
+    },
+    {
       field: 'createdAt',
-      title: '提交时间',
-      width: 180,
+      title: '创建时间',
+      minWidth: 150,
     },
     {
       align: 'center',
       cellRender: {
         attrs: {
-          nameField: 'title',
+          nameField: 'name',
           nameTitle: '反馈',
           onClick: onActionClick,
           actions: ['view'],
@@ -193,9 +230,8 @@ export function useColumns<T = FeedbackApi.Feedback>(
         name: 'CellOperation',
       },
       field: 'operation',
-      fixed: 'right',
       title: '操作',
-      width: 100,
+      minWidth: 80,
     },
   ];
 }
