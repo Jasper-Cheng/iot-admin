@@ -17,8 +17,18 @@ import { getFeedbackList } from '#/api/iot/feedback';
 import { getLogList } from '#/api/iot/log';
 import type { LogApi } from '#/api/iot/log';
 
+import { useVbenModal } from '@vben/common-ui';
+
+import ReplyModal from '#/views/feedback/list/modules/reply-modal.vue';
+
 const userStore = useUserStore();
 const router = useRouter();
+
+// 回复反馈弹窗
+const [ReplyModalComponent, replyModalApi] = useVbenModal({
+  connectedComponent: ReplyModal,
+  destroyOnClose: true,
+});
 
 // 待办反馈列表
 const pendingFeedbacks = ref<FeedbackApi.Feedback[]>([]);
@@ -298,9 +308,14 @@ const alertLevelMap: Record<string, { text: string; color: string }> = {
   fatal: { text: '严重', color: 'red' },
 };
 
-// 跳转到反馈列表
-function goToFeedback() {
-  router.push(`/feedback/list`);
+// 打开回复反馈弹窗
+function openReplyModal(feedback: FeedbackApi.Feedback) {
+  replyModalApi.setData(feedback).open();
+}
+
+// 回复成功后刷新待办反馈列表
+function onReplySuccess() {
+  loadPendingFeedbacks();
 }
 
 // 跳转到设备消息列表
@@ -374,6 +389,9 @@ function onStatisticClick(stat: typeof statistics[0]) {
 
 <template>
   <div class="p-5">
+    <!-- 回复反馈弹窗 -->
+    <ReplyModalComponent @success="onReplySuccess" />
+    
     <!-- 欢迎头部 -->
     <WorkbenchHeader
       :avatar="userStore.userInfo?.avatar || preferences.app.defaultAvatar"
@@ -423,8 +441,8 @@ function onStatisticClick(stat: typeof statistics[0]) {
             <li
               v-for="feedback in pendingFeedbacks"
               :key="feedback.id"
-              class="flex cursor-pointer justify-between gap-x-6 py-3 rounded-lg px-0"
-              @click="goToFeedback"
+              class="flex cursor-pointer justify-between gap-x-6 py-3 rounded-lg px-0 hover:bg-muted/50 transition-colors"
+              @click="openReplyModal(feedback)"
             >
               <div class="flex min-w-0 flex-auto items-center gap-x-4">
                 <div class="min-w-0 flex-auto">
