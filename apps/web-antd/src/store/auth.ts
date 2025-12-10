@@ -53,11 +53,13 @@ export const useAuthStore = defineStore('auth', () => {
         if (accessStore.loginExpired) {
           accessStore.setLoginExpired(false);
         } else {
-          onSuccess
-            ? await onSuccess?.()
-            : await router.push(
-                userInfo.homePath || preferences.app.defaultHomePath,
-              );
+          if (onSuccess) {
+            await onSuccess?.();
+          } else {
+            const redirectPath = userInfo.homePath || preferences.app.defaultHomePath;
+            console.log('[Login] Redirect path:', redirectPath, 'userInfo.homePath:', userInfo.homePath, 'defaultHomePath:', preferences.app.defaultHomePath);
+            await router.push(redirectPath);
+          }
         }
 
         if (userInfo?.realName) {
