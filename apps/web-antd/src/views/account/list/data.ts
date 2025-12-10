@@ -100,28 +100,6 @@ export function useGridFormSchema(): VbenFormSchema[] {
         allowClear: true,
       },
     },
-    {
-      component: 'Input',
-      fieldName: 'email',
-      label: '邮箱',
-      componentProps: {
-        placeholder: '请输入邮箱',
-        allowClear: true,
-      },
-    },
-    {
-      component: 'Select',
-      componentProps: {
-        allowClear: true,
-        options: [
-          { label: '管理员', value: 'admin' },
-          { label: '普通用户', value: 'user' },
-        ],
-        placeholder: '请选择角色',
-      },
-      fieldName: 'role',
-      label: '角色',
-    },
   ];
 }
 

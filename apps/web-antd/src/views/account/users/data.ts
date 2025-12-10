@@ -1,6 +1,13 @@
 import type { VbenFormSchema } from '#/adapter/form';
-import type { OnActionClickFn, VxeTableGridOptions } from '#/adapter/vxe-table';
+import type { VxeTableGridOptions } from '#/adapter/vxe-table';
 import type { UserApi } from '#/api/iot/user';
+
+interface OnActionClickParams<T> {
+  code: string;
+  row: T;
+}
+
+type OnActionClickFn<T> = (e: OnActionClickParams<T>) => void;
 
 import { h } from 'vue';
 
@@ -24,15 +31,6 @@ export function useGridFormSchema(): VbenFormSchema[] {
       label: '手机号',
       componentProps: {
         placeholder: '请输入手机号',
-        allowClear: true,
-      },
-    },
-    {
-      component: 'Input',
-      fieldName: 'email',
-      label: '邮箱',
-      componentProps: {
-        placeholder: '请输入邮箱',
         allowClear: true,
       },
     },
