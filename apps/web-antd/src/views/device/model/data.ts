@@ -126,6 +126,53 @@ const statusMap: Record<string, { color: string; text: string }> = {
   inactive: { text: '停用', color: 'default' },
 };
 
+// 解析属性JSON并格式化显示
+function formatProperties(properties: Record<string, any> | string | undefined): string {
+  if (!properties) return '-';
+  try {
+    const props = typeof properties === 'string' ? JSON.parse(properties) : properties;
+    if (!props || typeof props !== 'object') return '-';
+    const keys = Object.keys(props);
+    return keys.length > 0 ? keys.join(', ') : '-';
+  } catch {
+    return '-';
+  }
+}
+
+// 解析服务JSON并格式化显示
+function formatServices(services: string[] | Record<string, any> | string | undefined): string {
+  if (!services) return '-';
+  try {
+    let serviceList: string[] = [];
+    if (typeof services === 'string') {
+      const parsed = JSON.parse(services);
+      serviceList = Array.isArray(parsed) ? parsed : [];
+    } else if (Array.isArray(services)) {
+      serviceList = services;
+    }
+    return serviceList.length > 0 ? serviceList.join(', ') : '-';
+  } catch {
+    return '-';
+  }
+}
+
+// 解析事件JSON并格式化显示
+function formatEvents(events: string[] | Record<string, any> | string | undefined): string {
+  if (!events) return '-';
+  try {
+    let eventList: string[] = [];
+    if (typeof events === 'string') {
+      const parsed = JSON.parse(events);
+      eventList = Array.isArray(parsed) ? parsed : [];
+    } else if (Array.isArray(events)) {
+      eventList = events;
+    }
+    return eventList.length > 0 ? eventList.join(', ') : '-';
+  } catch {
+    return '-';
+  }
+}
+
 /** 表格列定义 */
 export function useColumns<T = DeviceModelApi.DeviceModel>(
   onActionClick: OnActionClickFn<T>,
@@ -137,48 +184,57 @@ export function useColumns<T = DeviceModelApi.DeviceModel>(
       width: 80,
     },
     {
-      field: 'name',
-      title: '型号名称',
-      minWidth: 150,
-    },
-    {
       field: 'code',
       title: '型号编码',
       width: 120,
     },
     {
-      field: 'thingModelName',
-      title: '物模型',
-      width: 150,
+      field: 'name',
+      title: '型号名称',
+      minWidth: 150,
     },
     {
       field: 'manufacturer',
-      title: '制造商',
+      title: '供应商',
       width: 120,
     },
     {
-      field: 'status',
-      title: '状态',
-      width: 100,
+      field: 'thingModelId',
+      title: '物模型ID',
+      width: 120,
+    },
+    {
+      field: 'properties',
+      title: '属性',
+      minWidth: 200,
+      showOverflow: true,
       slots: {
         default: ({ row }) => {
-          const status = statusMap[row.status] || {
-            text: row.status,
-            color: 'default',
-          };
-          return h(Tag, { color: status.color }, () => status.text);
+          return formatProperties(row.properties);
         },
       },
     },
     {
-      field: 'deviceCount',
-      title: '设备数量',
-      width: 100,
+      field: 'services',
+      title: '服务',
+      minWidth: 200,
+      showOverflow: true,
+      slots: {
+        default: ({ row }) => {
+          return formatServices(row.services);
+        },
+      },
     },
     {
-      field: 'createdAt',
-      title: '创建时间',
-      width: 180,
+      field: 'events',
+      title: '事件',
+      minWidth: 200,
+      showOverflow: true,
+      slots: {
+        default: ({ row }) => {
+          return formatEvents(row.events);
+        },
+      },
     },
     {
       align: 'center',
@@ -187,13 +243,14 @@ export function useColumns<T = DeviceModelApi.DeviceModel>(
           nameField: 'name',
           nameTitle: '型号',
           onClick: onActionClick,
+          actions: ['edit', 'delete'],
         },
         name: 'CellOperation',
       },
       field: 'operation',
       fixed: 'right',
       title: '操作',
-      width: 130,
+      width: 150,
     },
   ];
 }

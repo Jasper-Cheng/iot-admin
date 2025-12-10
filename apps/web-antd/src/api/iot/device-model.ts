@@ -3,14 +3,15 @@ import { requestClient } from '#/api/request';
 export namespace DeviceModelApi {
   export interface DeviceModel {
     id: number;
-    modelCode: string;
+    code: string; // 型号编码
     name: string;
-    vendor?: string;
+    manufacturer?: string; // 制造商
     thingModelId: number;
     thingModelName?: string; // 扩展字段，用于显示
     properties: Record<string, any>; // JSON 格式的属性定义
     services: string[] | Record<string, any>; // JSON 格式的服务定义
     events: string[] | Record<string, any>; // JSON 格式的事件定义
+    status?: string; // 状态：active/inactive
     createdAt: string;
     // 扩展字段（用于显示）
     deviceCount?: number;
@@ -20,9 +21,10 @@ export namespace DeviceModelApi {
     page?: number;
     pageSize?: number;
     name?: string;
-    modelCode?: string;
-    vendor?: string;
+    code?: string;
+    manufacturer?: string;
     thingModelId?: number;
+    status?: string;
   }
 
   export interface DeviceModelListResult {
@@ -31,13 +33,14 @@ export namespace DeviceModelApi {
   }
 
   export interface CreateDeviceModelParams {
-    modelCode: string;
+    code: string;
     name: string;
-    vendor?: string;
+    manufacturer?: string;
     thingModelId: number;
     properties: Record<string, any>;
     services: string[] | Record<string, any>;
     events: string[] | Record<string, any>;
+    status?: string;
   }
 }
 
