@@ -4,8 +4,6 @@ import type { FamilyApi } from '#/api/iot/family';
 
 import { h } from 'vue';
 
-import { Tag } from 'ant-design-vue';
-
 interface OnActionClickParams<T> {
   code: string;
   row: T;
