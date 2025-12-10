@@ -119,7 +119,7 @@ const [Drawer, drawerApi] = useVbenDrawer({
         name: values.name,
         modelId: values.modelId,
         accountId: values.accountId || undefined,
-        familyIds: values.familyIds || undefined,
+        familyIds: Array.isArray(values.familyIds) ? values.familyIds : undefined,
       };
       await updateDevice(id.value!, payload);
       emits('success');
