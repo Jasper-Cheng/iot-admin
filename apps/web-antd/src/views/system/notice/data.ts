@@ -159,9 +159,7 @@ const priorityMap: Record<string, { color: string; text: string }> = {
 };
 
 /** 表格列定义 */
-export function useColumns<T = NoticeApi.Notice>(
-  onActionClick: OnActionClickFn<T>,
-): VxeTableGridOptions['columns'] {
+export function useColumns<T = NoticeApi.Notice>(): VxeTableGridOptions['columns'] {
   return [
     {
       field: 'id',
@@ -230,21 +228,6 @@ export function useColumns<T = NoticeApi.Notice>(
       field: 'createdAt',
       title: '创建时间',
       width: 180,
-    },
-    {
-      align: 'center',
-      cellRender: {
-        attrs: {
-          nameField: 'title',
-          nameTitle: '消息',
-          onClick: onActionClick,
-        },
-        name: 'CellOperation',
-      },
-      field: 'operation',
-      fixed: 'right',
-      title: '操作',
-      width: 130,
     },
   ];
 }
