@@ -7,14 +7,21 @@ interface OnActionClickParams<T> {
   row: T;
 }
 
-import { Page } from '@vben/common-ui';
+import { Page, useVbenDrawer } from '@vben/common-ui';
+import { Plus } from '@vben/icons';
 
-import { message, Modal } from 'ant-design-vue';
+import { Button, message, Modal } from 'ant-design-vue';
 
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
-import { getUserList } from '#/api/iot/user';
+import { deleteUser, getUserList } from '#/api/iot/user';
 
 import { useColumns, useGridFormSchema } from './data';
+import Form from './modules/form.vue';
+
+const [FormDrawer, formDrawerApi] = useVbenDrawer({
+  connectedComponent: Form,
+  destroyOnClose: true,
+});
 
 const [Grid, gridApi] = useVbenVxeGrid({
   formOptions: {
@@ -51,8 +58,12 @@ const [Grid, gridApi] = useVbenVxeGrid({
 
 function onActionClick(e: OnActionClickParams<UserApi.AppUser>) {
   switch (e.code) {
-    case 'view': {
-      onView(e.row);
+    case 'edit': {
+      onEdit(e.row);
+      break;
+    }
+    case 'delete': {
+      onDelete(e.row);
       break;
     }
   }
@@ -78,29 +89,42 @@ async function onStatusChange(newStatus: string, row: UserApi.AppUser) {
   return false;
 }
 
-function onView(row: UserApi.AppUser) {
-  Modal.info({
-    title: `用户详情 - ${row.nickname}`,
-    content: `
-      手机号: ${row.phone}
-      邮箱: ${row.email || '未设置'}
-      性别: ${row.gender === 'male' ? '男' : row.gender === 'female' ? '女' : '其他'}
-      角色: ${row.role === 'admin' ? '管理员' : '普通用户'}
-      设备数: ${row.deviceCount || 0}
-      家庭数: ${row.familyCount || 0}
-      注册时间: ${row.createdAt}
-    `,
-    width: 500,
+function onEdit(row: UserApi.AppUser) {
+  formDrawerApi.setData(row).open();
+}
+
+function onDelete(row: UserApi.AppUser) {
+  Modal.confirm({
+    title: '确认删除',
+    content: `确定要删除用户【${row.nickname}】吗？`,
+    okType: 'danger',
+    onOk: async () => {
+      await deleteUser(row.id);
+      message.success('删除成功');
+      onRefresh();
+    },
   });
 }
 
 function onRefresh() {
   gridApi.query();
 }
+
+function onCreate() {
+  formDrawerApi.setData({}).open();
+}
 </script>
 
 <template>
   <Page auto-content-height title="用户管理" description="管理 App 用户">
-    <Grid table-title="用户列表" />
+    <FormDrawer @success="onRefresh" />
+    <Grid table-title="用户列表">
+      <template #toolbar-tools>
+        <Button type="primary" @click="onCreate">
+          <Plus class="size-5" />
+          新增用户
+        </Button>
+      </template>
+    </Grid>
   </Page>
 </template>
