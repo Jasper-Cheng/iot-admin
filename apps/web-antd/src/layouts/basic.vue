@@ -12,7 +12,6 @@ import { useAccessStore, useUserStore } from '@vben/stores';
 import { Button } from 'ant-design-vue';
 import { LogOut } from '@vben/icons';
 
-import { $t } from '#/locales';
 import { useAuthStore } from '#/store';
 import LoginForm from '#/views/_core/authentication/login.vue';
 
@@ -54,7 +53,7 @@ watch(
 <template>
   <BasicLayout @clear-preferences-and-logout="handleLogout">
     <template #header-right-151>
-      <Button type="text" danger @click="handleLogout" :title="$t('ui.widgets.logout')">
+      <Button type="text" danger @click="handleLogout" title="退出登录">
         <LogOut class="size-4" />
       </Button>
     </template>
