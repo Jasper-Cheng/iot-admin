@@ -50,17 +50,16 @@ export function useGridFormSchema(): VbenFormSchema[] {
   ];
 }
 
-const typeMap: Record<string, { color: string; text: string }> = {
-  alarm: { text: '告警', color: 'orange' },
-  fault: { text: '故障', color: 'red' },
-  event: { text: '事件', color: 'blue' },
-  offline: { text: '离线', color: 'default' },
+const levelMap: Record<string, { color: string; text: string }> = {
+  low: { text: '低', color: 'default' },
+  normal: { text: '普通', color: 'blue' },
+  error: { text: '错误', color: 'orange' },
+  fatal: { text: '严重', color: 'red' },
 };
 
-const levelMap: Record<string, { color: string; text: string }> = {
-  info: { text: '信息', color: 'blue' },
-  warning: { text: '警告', color: 'orange' },
-  error: { text: '错误', color: 'red' },
+const statusMap: Record<string, { color: string; text: string }> = {
+  new: { text: '未读', color: 'red' },
+  read: { text: '已读', color: 'default' },
 };
 
 /** 表格列定义 */
@@ -75,30 +74,22 @@ export function useColumns(): VxeTableGridOptions<DeviceApi.DeviceMessage>['colu
       field: 'deviceSn',
       title: '设备SN',
       width: 150,
+      slots: {
+        default: ({ row }) => row.deviceSn || '-',
+      },
     },
     {
       field: 'deviceName',
       title: '设备名称',
-      width: 150,
-    },
-    {
-      field: 'type',
-      title: '类型',
-      width: 100,
+      minWidth: 150,
       slots: {
-        default: ({ row }) => {
-          const type = typeMap[row.type] || {
-            text: row.type,
-            color: 'default',
-          };
-          return h(Tag, { color: type.color }, () => type.text);
-        },
+        default: ({ row }) => row.deviceName || '-',
       },
     },
     {
       field: 'level',
-      title: '级别',
-      width: 80,
+      title: '消息级别',
+      width: 100,
       slots: {
         default: ({ row }) => {
           const level = levelMap[row.level] || {
@@ -110,32 +101,53 @@ export function useColumns(): VxeTableGridOptions<DeviceApi.DeviceMessage>['colu
       },
     },
     {
-      field: 'title',
-      title: '标题',
-      width: 150,
-    },
-    {
-      field: 'content',
-      title: '内容',
-      minWidth: 250,
-      showOverflow: true,
-    },
-    {
-      field: 'isRead',
-      title: '已读',
-      width: 80,
+      field: 'status',
+      title: '消息状态',
+      width: 100,
       slots: {
         default: ({ row }) => {
-          return row.isRead
-            ? h(Tag, { color: 'default' }, () => '已读')
-            : h(Tag, { color: 'red' }, () => '未读');
+          const status = statusMap[row.status] || {
+            text: row.status,
+            color: 'default',
+          };
+          return h(Tag, { color: status.color }, () => status.text);
         },
       },
     },
     {
-      field: 'createdAt',
-      title: '时间',
+      field: 'message',
+      title: '内容',
+      minWidth: 250,
+      showOverflow: true,
+      slots: {
+        default: ({ row }) => row.message || '-',
+      },
+    },
+    {
+      field: 'detail',
+      title: '消息参数',
+      minWidth: 200,
+      slots: {
+        default: ({ row }) => {
+          if (!row.detail || Object.keys(row.detail).length === 0) {
+            return '-';
+          }
+          return JSON.stringify(row.detail);
+        },
+      },
+    },
+    {
+      field: 'updatedAt',
+      title: '更新时间',
       width: 180,
+      slots: {
+        default: ({ row }) => {
+          // 如果有 updatedAt 则显示 updatedAt，否则显示 createdAt
+          return row.updatedAt || row.createdAt || '-';
+        },
+      },
     },
   ];
 }
+
+

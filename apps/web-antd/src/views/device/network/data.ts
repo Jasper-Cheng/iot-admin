@@ -2,10 +2,6 @@ import type { VbenFormSchema } from '#/adapter/form';
 import type { VxeTableGridOptions } from '#/adapter/vxe-table';
 import type { DeviceApi } from '#/api/iot/device';
 
-import { h } from 'vue';
-
-import { Tag } from 'ant-design-vue';
-
 /** 搜索表单 Schema */
 export function useGridFormSchema(): VbenFormSchema[] {
   return [
@@ -50,13 +46,6 @@ export function useGridFormSchema(): VbenFormSchema[] {
   ];
 }
 
-const signalMap: Record<string, { color: string; text: string }> = {
-  excellent: { text: '优秀', color: 'success' },
-  good: { text: '良好', color: 'processing' },
-  fair: { text: '一般', color: 'warning' },
-  weak: { text: '较弱', color: 'error' },
-};
-
 const typeMap: Record<string, string> = {
   wifi: 'Wi-Fi',
   ble: '蓝牙',
@@ -66,6 +55,11 @@ const typeMap: Record<string, string> = {
 /** 表格列定义 */
 export function useColumns(): VxeTableGridOptions<DeviceApi.NetworkInfo>['columns'] {
   return [
+    {
+      field: 'id',
+      title: 'ID',
+      width: 80,
+    },
     {
       field: 'deviceSn',
       title: '设备SN',
