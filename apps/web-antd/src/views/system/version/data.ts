@@ -135,9 +135,7 @@ const platformMap: Record<string, { color: string; text: string }> = {
 };
 
 /** 表格列定义 */
-export function useColumns<T = VersionApi.AppVersion>(
-  onActionClick: OnActionClickFn<T>,
-): VxeTableGridOptions['columns'] {
+export function useColumns<T = VersionApi.AppVersion>(): VxeTableGridOptions['columns'] {
   return [
     {
       field: 'id',
@@ -180,6 +178,43 @@ export function useColumns<T = VersionApi.AppVersion>(
       showOverflow: true,
     },
     {
+      field: 'downloadUrl',
+      title: '下载URL',
+      minWidth: 200,
+      showOverflow: true,
+      slots: {
+        default: ({ row }) => {
+          if (!row.downloadUrl) {
+            return h('span', { class: 'text-gray-400' }, '未设置');
+          }
+          return h(
+            'a',
+            {
+              href: row.downloadUrl,
+              target: '_blank',
+              rel: 'noopener noreferrer',
+              class: 'text-blue-500 hover:underline',
+            },
+            row.downloadUrl,
+          );
+        },
+      },
+    },
+    {
+      field: 'fileSize',
+      title: '文件大小',
+      width: 120,
+      slots: {
+        default: ({ row }) => {
+          if (!row.fileSize) {
+            return h('span', { class: 'text-gray-400' }, '未设置');
+          }
+          const sizeMB = (row.fileSize / 1024 / 1024).toFixed(2);
+          return `${sizeMB} MB`;
+        },
+      },
+    },
+    {
       field: 'isForceUpdate',
       title: '强制更新',
       width: 100,
@@ -192,36 +227,22 @@ export function useColumns<T = VersionApi.AppVersion>(
       },
     },
     {
-      field: 'fileSize',
-      title: '文件大小',
-      width: 120,
+      field: 'minSupportedVersion',
+      title: '最小支持版本',
+      width: 150,
       slots: {
         default: ({ row }) => {
-          if (!row.fileSize) return h('span', { class: 'text-gray-400' }, '未设置');
-          const sizeMB = (row.fileSize / 1024 / 1024).toFixed(2);
-          return `${sizeMB} MB`;
+          return row.minSupportedVersion || h('span', { class: 'text-gray-400' }, '未设置');
         },
       },
     },
     {
-      field: 'createdAt',
-      title: '创建时间',
+      field: 'updatedAt',
+      title: '更新时间',
       width: 180,
-    },
-    {
-      align: 'center',
-      cellRender: {
-        attrs: {
-          nameField: 'versionName',
-          nameTitle: '版本',
-          onClick: onActionClick,
-        },
-        name: 'CellOperation',
+      slots: {
+        default: ({ row }) => row.updatedAt || row.createdAt || '-',
       },
-      field: 'operation',
-      fixed: 'right',
-      title: '操作',
-      width: 130,
     },
   ];
 }
