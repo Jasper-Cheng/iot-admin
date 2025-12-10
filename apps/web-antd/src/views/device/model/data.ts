@@ -67,20 +67,6 @@ export function useFormSchema(): VbenFormSchema[] {
         rows: 3,
       },
     },
-    {
-      component: 'RadioGroup',
-      componentProps: {
-        buttonStyle: 'solid',
-        options: [
-          { label: '启用', value: 'active' },
-          { label: '停用', value: 'inactive' },
-        ],
-        optionType: 'button',
-      },
-      defaultValue: 'active',
-      fieldName: 'status',
-      label: '状态',
-    },
   ];
 }
 

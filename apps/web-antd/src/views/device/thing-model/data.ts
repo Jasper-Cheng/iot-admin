@@ -31,20 +31,6 @@ export function useFormSchema(): VbenFormSchema[] {
         rows: 3,
       },
     },
-    {
-      component: 'RadioGroup',
-      componentProps: {
-        buttonStyle: 'solid',
-        options: [
-          { label: '草稿', value: 'draft' },
-          { label: '已发布', value: 'published' },
-        ],
-        optionType: 'button',
-      },
-      defaultValue: 'draft',
-      fieldName: 'status',
-      label: '状态',
-    },
   ];
 }
 

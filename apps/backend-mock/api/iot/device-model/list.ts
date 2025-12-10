@@ -4,9 +4,9 @@ import { usePageResponseSuccess } from '../../../utils/response';
 const MOCK_DEVICE_MODELS = [
   {
     id: 1,
-    modelCode: 'TEMP001',
+    code: 'TEMP001',
     name: '温度传感器',
-    vendor: 'IoT Corp',
+    manufacturer: 'IoT Corp',
     thingModelId: 1,
     thingModelName: '温度传感器物模型',
     properties: {
@@ -19,9 +19,9 @@ const MOCK_DEVICE_MODELS = [
   },
   {
     id: 2,
-    modelCode: 'HUM001',
+    code: 'HUM001',
     name: '湿度传感器',
-    vendor: 'IoT Corp',
+    manufacturer: 'IoT Corp',
     thingModelId: 2,
     thingModelName: '湿度传感器物模型',
     properties: {
@@ -34,9 +34,9 @@ const MOCK_DEVICE_MODELS = [
   },
   {
     id: 3,
-    modelCode: 'ENV001',
+    code: 'ENV001',
     name: '环境监测器',
-    vendor: 'Smart Devices',
+    manufacturer: 'Smart Devices',
     thingModelId: 3,
     thingModelName: '环境监测器物模型',
     properties: {
@@ -51,9 +51,9 @@ const MOCK_DEVICE_MODELS = [
   },
   {
     id: 4,
-    modelCode: 'M701001',
+    code: 'M701001',
     name: '室内空气质量监测器',
-    vendor: 'Smart Devices',
+    manufacturer: 'Smart Devices',
     thingModelId: 4,
     thingModelName: '室内空气质量监测器物模型',
     properties: {
@@ -73,18 +73,18 @@ const MOCK_DEVICE_MODELS = [
 ];
 
 export default eventHandler(async (event) => {
-  const { page = 1, pageSize = 10, name, modelCode, vendor, thingModelId } = getQuery(event);
+  const { page = 1, pageSize = 10, name, code, manufacturer, thingModelId } = getQuery(event);
   
   let filtered = MOCK_DEVICE_MODELS;
   
   if (name) {
     filtered = filtered.filter((item) => item.name.includes(name as string));
   }
-  if (modelCode) {
-    filtered = filtered.filter((item) => item.modelCode.includes(modelCode as string));
+  if (code) {
+    filtered = filtered.filter((item) => item.code.includes(code as string));
   }
-  if (vendor) {
-    filtered = filtered.filter((item) => item.vendor?.includes(vendor as string));
+  if (manufacturer) {
+    filtered = filtered.filter((item) => item.manufacturer?.includes(manufacturer as string));
   }
   if (thingModelId) {
     filtered = filtered.filter((item) => item.thingModelId === Number(thingModelId));
