@@ -1,5 +1,4 @@
 <script lang="ts" setup>
-import type { WorkbenchTrendItem } from '@vben/common-ui';
 import type { DeviceApi } from '#/api/iot/device';
 import type { FeedbackApi } from '#/api/iot/feedback';
 
@@ -15,6 +14,8 @@ import { useUserStore } from '@vben/stores';
 import { Card, Statistic, Tag } from 'ant-design-vue';
 
 import { getFeedbackList } from '#/api/iot/feedback';
+import { getLogList } from '#/api/iot/log';
+import type { LogApi } from '#/api/iot/log';
 
 const userStore = useUserStore();
 const router = useRouter();
@@ -26,6 +27,10 @@ const loadingFeedbacks = ref(false);
 // 今日告警列表
 const todayAlerts = ref<DeviceApi.DeviceMessage[]>([]);
 const loadingAlerts = ref(false);
+
+// 操作日志列表
+const operationLogs = ref<LogApi.OperationLog[]>([]);
+const loadingLogs = ref(false);
 
 // 加载未处理的反馈
 async function loadPendingFeedbacks() {
@@ -303,50 +308,53 @@ function goToAlerts() {
   router.push(`/device/message`);
 }
 
+// 跳转到操作日志
+function goToOperationLogs() {
+  router.push(`/account/logs`);
+}
+
+// 加载操作日志
+async function loadOperationLogs() {
+  loadingLogs.value = true;
+  try {
+    const res = await getLogList({
+      page: 1,
+      pageSize: 10,
+    });
+    operationLogs.value = res.items || [];
+  } catch {
+    // 忽略错误，使用默认数据
+    operationLogs.value = [];
+  } finally {
+    loadingLogs.value = false;
+  }
+}
+
 onMounted(() => {
   loadPendingFeedbacks();
   loadTodayAlerts();
+  loadOperationLogs();
 });
 
-// 最新动态
-const trendItems: WorkbenchTrendItem[] = [
-  {
-    avatar: 'svg:avatar-1',
-    content: '新增设备 <a>智能温控器</a> 入库成功',
-    date: '5分钟前',
-    title: '系统',
-  },
-  {
-    avatar: 'svg:avatar-2',
-    content: '用户 <a>张三</a> 提交了新的反馈',
-    date: '30分钟前',
-    title: '反馈',
-  },
-  {
-    avatar: 'svg:avatar-3',
-    content: '设备 <a>智能空调E</a> 触发故障告警',
-    date: '1小时前',
-    title: '告警',
-  },
-  {
-    avatar: 'svg:avatar-4',
-    content: '发布系统消息 <a>系统维护通知</a>',
-    date: '2小时前',
-    title: '消息',
-  },
-  {
-    avatar: 'svg:avatar-1',
-    content: 'Android 版本 <a>v2.1.0</a> 发布成功',
-    date: '昨天',
-    title: '版本',
-  },
-  {
-    avatar: 'svg:avatar-2',
-    content: '处理用户反馈 <a>设备无法连接</a>',
-    date: '昨天',
-    title: '反馈',
-  },
-];
+// 操作类型映射
+const operationTypeMap: Record<string, { text: string; color: string }> = {
+  login: { text: '登录', color: 'blue' },
+  logout: { text: '登出', color: 'default' },
+  register: { text: '注册', color: 'green' },
+  account_delete: { text: '删除账户', color: 'red' },
+  account_update: { text: '更新账户', color: 'orange' },
+  device_bind: { text: '绑定设备', color: 'cyan' },
+  device_unbind: { text: '解绑设备', color: 'orange' },
+  device_name_update: { text: '更新设备名', color: 'blue' },
+  device_add_to_family: { text: '添加设备到家庭', color: 'green' },
+  device_remove_from_family: { text: '从家庭移除设备', color: 'orange' },
+  family_create: { text: '创建家庭', color: 'green' },
+  family_delete: { text: '删除家庭', color: 'red' },
+  family_member_add: { text: '添加家庭成员', color: 'cyan' },
+  family_member_remove: { text: '移除家庭成员', color: 'orange' },
+  quick_control: { text: '快速控制', color: 'blue' },
+  feedback_create: { text: '创建反馈', color: 'purple' },
+};
 
 // 统计数据
 const statistics = [
@@ -490,42 +498,47 @@ function onStatisticClick(stat: typeof statistics[0]) {
         </div>
       </Card>
       
-      <!-- 最新动态 -->
+      <!-- 操作日志 -->
       <Card
         :body-style="{ height: 'calc(500px - 57px)', display: 'flex', flexDirection: 'column', padding: 0, overflow: 'hidden' }"
         style="height: 500px; display: flex; flex-direction: column;"
       >
         <template #title>
-          <span class="text-lg">最新动态</span>
+          <span class="text-lg">操作日志</span>
         </template>
         <div class="flex-1 overflow-y-auto p-5 min-h-0 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
-          <ul class="divide-border w-full divide-y" role="list">
+          <ul v-if="operationLogs.length > 0" class="divide-border w-full divide-y" role="list">
             <li
-              v-for="item in trendItems"
-              :key="item.title"
-              class="flex cursor-pointer justify-between gap-x-6 py-3 rounded-lg px-0"
+              v-for="log in operationLogs"
+              :key="log.id"
+              class="flex cursor-pointer justify-between gap-x-6 py-3 rounded-lg px-0 hover:bg-muted/50 transition-colors"
+              @click="goToOperationLogs"
             >
               <div class="flex min-w-0 flex-auto items-center gap-x-4">
                 <div class="min-w-0 flex-auto">
                   <div class="flex items-center gap-2">
                     <p class="text-foreground text-sm font-semibold leading-6">
-                      {{ item.title }}
+                      {{ log.accountName || `用户${log.accountId}` }}
                     </p>
+                    <Tag :color="operationTypeMap[log.operationType]?.color || 'default'">
+                      {{ operationTypeMap[log.operationType]?.text || log.operationType }}
+                    </Tag>
                   </div>
-                  <!-- eslint-disable vue/no-v-html -->
-                  <p
-                    class="text-foreground/80 *:text-primary mt-1 line-clamp-2 text-xs leading-5"
-                    v-html="item.content"
-                  ></p>
+                  <p class="text-foreground/80 mt-1 line-clamp-2 text-xs leading-5">
+                    {{ log.description }}
+                  </p>
                 </div>
               </div>
               <div class="hidden h-full shrink-0 sm:flex sm:flex-col sm:items-end">
                 <span class="text-foreground/80 text-xs leading-6">
-                  {{ item.date }}
+                  {{ formatDate(log.createdAt) }}
                 </span>
               </div>
             </li>
           </ul>
+          <div v-else class="py-10 text-center text-foreground/60 text-sm">
+            暂无操作日志
+          </div>
         </div>
       </Card>
     </div>
