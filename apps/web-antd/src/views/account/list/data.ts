@@ -6,6 +6,8 @@ import { h } from 'vue';
 
 import { Tag } from 'ant-design-vue';
 
+import { z } from '#/adapter/form';
+
 interface OnActionClickParams<T> {
   code: string;
   row: T;
@@ -56,18 +58,37 @@ export function useFormSchema(): VbenFormSchema[] {
       },
     },
     {
-      component: 'Select',
+      component: 'InputPassword',
+      fieldName: 'confirmPassword',
+      label: '确认密码',
       componentProps: {
-        options: [
-          { label: '管理员', value: 'admin' },
-          { label: '普通用户', value: 'user' },
-        ],
-        placeholder: '请选择角色',
+        placeholder: '请再次输入密码',
       },
-      defaultValue: 'admin',
-      fieldName: 'role',
-      label: '角色',
-      rules: 'required',
+      dependencies: {
+        show: (values) => !values.id,
+        rules: (values) => {
+          if (values.id) return [];
+          const { password } = values;
+          return z
+            .string({ required_error: '请再次输入密码' })
+            .min(1, { message: '请再次输入密码' })
+            .refine((value) => value === password, {
+              message: '两次输入的密码不一致',
+            });
+        },
+        triggerFields: ['password'],
+      },
+    },
+    {
+      component: 'Upload',
+      fieldName: 'avatar',
+      label: '头像',
+      componentProps: {
+        listType: 'picture-card',
+        maxCount: 1,
+        accept: 'image/*',
+        beforeUpload: () => false, // 阻止自动上传，手动处理
+      },
     },
     {
       component: 'Select',
@@ -143,20 +164,19 @@ export function useColumns<T = AccountApi.Admin>(
       width: 140,
     },
     {
+      field: 'password',
+      title: '密码',
+      width: 120,
+      slots: {
+        default: ({ row }) => row.password || '-',
+      },
+    },
+    {
       field: 'email',
       title: '邮箱',
       minWidth: 180,
-    },
-    {
-      field: 'role',
-      title: '角色',
-      width: 100,
       slots: {
-        default: ({ row }) => {
-          const roleText = row.role === 'admin' ? '管理员' : '普通用户';
-          const roleColor = row.role === 'admin' ? 'red' : 'blue';
-          return h(Tag, { color: roleColor }, () => roleText);
-        },
+        default: ({ row }) => row.email || '-',
       },
     },
     {
@@ -175,6 +195,18 @@ export function useColumns<T = AccountApi.Admin>(
       },
     },
     {
+      field: 'role',
+      title: '角色',
+      width: 100,
+      slots: {
+        default: ({ row }) => {
+          const roleText = row.role === 'admin' ? '管理员' : '普通用户';
+          const roleColor = row.role === 'admin' ? 'red' : 'blue';
+          return h(Tag, { color: roleColor }, () => roleText);
+        },
+      },
+    },
+    {
       field: 'createdAt',
       title: '创建时间',
       width: 180,
@@ -186,13 +218,14 @@ export function useColumns<T = AccountApi.Admin>(
           nameField: 'nickname',
           nameTitle: '管理员',
           onClick: onActionClick,
+          actions: ['edit', 'delete'],
         },
         name: 'CellOperation',
       },
       field: 'operation',
       fixed: 'right',
       title: '操作',
-      width: 130,
+      width: 120,
     },
   ];
 }

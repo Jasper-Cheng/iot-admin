@@ -34,7 +34,7 @@ export namespace AccountApi {
     phone: string;
     email?: string;
     password: string;
-    role?: 'user' | 'admin';
+    avatar?: string;
     gender?: 'male' | 'female' | 'other';
   }
 
