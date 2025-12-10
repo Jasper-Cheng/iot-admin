@@ -32,7 +32,7 @@ export namespace LogApi {
   export interface LogListParams {
     page?: number;
     pageSize?: number;
-    accountName?: string;
+    accountId?: number;
     operationType?: OperationType;
     startTime?: string;
     endTime?: string;

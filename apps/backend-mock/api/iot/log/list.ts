@@ -68,12 +68,12 @@ const MOCK_LOGS = [
 ];
 
 export default eventHandler(async (event) => {
-  const { page = 1, pageSize = 10, accountName, operationType, startTime, endTime } = getQuery(event);
+  const { page = 1, pageSize = 10, accountId, operationType, startTime, endTime } = getQuery(event);
   
   let filtered = MOCK_LOGS;
   
-  if (accountName) {
-    filtered = filtered.filter((item) => item.accountName?.includes(accountName as string));
+  if (accountId) {
+    filtered = filtered.filter((item) => item.accountId === Number(accountId));
   }
   if (operationType) {
     filtered = filtered.filter((item) => item.operationType === operationType);
