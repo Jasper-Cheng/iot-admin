@@ -29,7 +29,10 @@ const [Drawer, drawerApi] = useVbenDrawer({
     drawerApi.lock();
 
     try {
-      await (id.value ? updateFamily(id.value, values) : createFamily(values));
+      const payload = values as FamilyApi.CreateFamilyParams;
+      await (id.value
+        ? updateFamily(id.value, payload)
+        : createFamily(payload));
       emits('success');
       drawerApi.close();
     } catch {

@@ -55,7 +55,10 @@ const [Modal, modalApi] = useVbenModal({
     modalApi.lock();
 
     try {
-      await replyFeedback(feedback.value.id, values);
+      await replyFeedback(
+        feedback.value.id,
+        values as FeedbackApi.ReplyFeedbackParams,
+      );
       emits('success');
       modalApi.close();
     } catch {

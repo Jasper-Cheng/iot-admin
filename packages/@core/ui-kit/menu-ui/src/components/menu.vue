@@ -246,6 +246,8 @@ function updateActiveName(val: string) {
 
 function handleMenuItemClick(data: MenuItemClicked) {
   const { collapse, mode } = props;
+  // 只在水平模式或侧边栏折叠时才清空打开的菜单
+  // 当侧边栏展开时，点击其他导航项不清空已打开的菜单
   if (mode === 'horizontal' || collapse) {
     openedMenus.value = [];
   }

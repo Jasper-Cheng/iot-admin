@@ -1,10 +1,17 @@
 import type { VbenFormSchema } from '#/adapter/form';
-import type { OnActionClickFn, VxeTableGridOptions } from '#/adapter/vxe-table';
+import type { VxeTableGridOptions } from '#/adapter/vxe-table';
 import type { FeedbackApi } from '#/api/iot/feedback';
 
 import { h } from 'vue';
 
 import { Image, Space, Tag } from 'ant-design-vue';
+
+interface OnActionClickParams<T> {
+  code: string;
+  row: T;
+}
+
+type OnActionClickFn<T> = (e: OnActionClickParams<T>) => void;
 
 /** 搜索表单 Schema */
 export function useGridFormSchema(): VbenFormSchema[] {

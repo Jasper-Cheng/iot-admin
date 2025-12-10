@@ -39,6 +39,24 @@ const routes: RouteRecordRaw[] = [
           title: $t('page.system.version'),
         },
       },
+      {
+        name: 'FeedbackList',
+        path: '/system/feedback',
+        component: () => import('#/views/feedback/list/index.vue'),
+        meta: {
+          icon: 'lucide:message-circle',
+          title: $t('page.feedback.list'),
+        },
+      },
+      {
+        name: 'OperationLog',
+        path: '/system/logs',
+        component: () => import('#/views/account/logs/index.vue'),
+        meta: {
+          icon: 'lucide:file-clock',
+          title: $t('page.account.logs'),
+        },
+      },
     ],
   },
 ];

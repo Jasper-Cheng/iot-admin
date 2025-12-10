@@ -325,7 +325,7 @@ function goToAlerts() {
 
 // 跳转到操作日志
 function goToOperationLogs() {
-  router.push(`/account/logs`);
+  router.push(`/system/logs`);
 }
 
 // 加载操作日志

@@ -1,9 +1,11 @@
 <script lang="ts" setup>
-import type {
-  OnActionClickParams,
-  VxeTableGridOptions,
-} from '#/adapter/vxe-table';
+import type { VxeTableGridOptions } from '#/adapter/vxe-table';
 import type { ThingModelApi } from '#/api/iot/thing-model';
+
+interface OnActionClickParams<T> {
+  code: string;
+  row: T;
+}
 
 import { Page, useVbenDrawer } from '@vben/common-ui';
 import { Plus } from '@vben/icons';
@@ -76,10 +78,10 @@ function onEdit(row: ThingModelApi.ThingModel) {
 }
 
 function onDelete(row: ThingModelApi.ThingModel) {
-  if (row.deviceCount > 0) {
+  if ((row.deviceCount ?? 0) > 0) {
     Modal.warning({
       title: '无法删除',
-      content: `物模型【${row.name}】已关联 ${row.deviceCount} 个设备，无法删除`,
+      content: `物模型【${row.name}】已关联 ${row.deviceCount ?? 0} 个设备，无法删除`,
     });
     return;
   }

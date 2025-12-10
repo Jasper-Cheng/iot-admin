@@ -1,9 +1,11 @@
 <script lang="ts" setup>
-import type {
-  OnActionClickParams,
-  VxeTableGridOptions,
-} from '#/adapter/vxe-table';
+import type { VxeTableGridOptions } from '#/adapter/vxe-table';
 import type { FamilyApi } from '#/api/iot/family';
+
+interface OnActionClickParams<T> {
+  code: string;
+  row: T;
+}
 
 import { Page, useVbenDrawer } from '@vben/common-ui';
 import { Plus } from '@vben/icons';
@@ -14,7 +16,7 @@ import { useVbenVxeGrid } from '#/adapter/vxe-table';
 import { deleteFamily, getFamilyList } from '#/api/iot/family';
 
 import { useColumns, useGridFormSchema } from './data';
-import Form from './modules/form.vue';
+import Form from './modules/form.vue'; // eslint-disable-line
 
 const [FormDrawer, formDrawerApi] = useVbenDrawer({
   connectedComponent: Form,

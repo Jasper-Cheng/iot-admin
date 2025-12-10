@@ -4,7 +4,7 @@ import { h } from 'vue';
 
 import { setupVbenVxeTable, useVbenVxeGrid } from '@vben/plugins/vxe-table';
 
-import { Button, Image } from 'ant-design-vue';
+import { Button, Image, Space } from 'ant-design-vue';
 
 import { useVbenForm } from './form';
 
@@ -55,6 +55,46 @@ setupVbenVxeTable({
           { size: 'small', type: 'link' },
           { default: () => props?.text },
         );
+      },
+    });
+
+    // 表格配置项可以用 cellRender: { name: 'CellOperation' },
+    vxeUI.renderer.add('CellOperation', {
+      renderTableDefault(renderOpts, params) {
+        const { attrs } = renderOpts;
+        const { row } = params;
+        const { actions = [], onClick } = attrs || {};
+
+        if (!actions || actions.length === 0) {
+          return '';
+        }
+
+        const buttons = actions.map((action: string) => {
+          const buttonText: Record<string, string> = {
+            view: '查看',
+            edit: '编辑',
+            delete: '删除',
+          };
+
+          const isDelete = action === 'delete';
+
+          return h(
+            Button,
+            {
+              size: 'small',
+              type: 'link',
+              danger: isDelete,
+              onClick: () => {
+                if (onClick) {
+                  onClick({ code: action, row });
+                }
+              },
+            },
+            { default: () => buttonText[action] || action },
+          );
+        });
+
+        return h(Space, { size: 'small' }, () => buttons);
       },
     });
 

@@ -30,15 +30,6 @@ const routes: RouteRecordRaw[] = [
           title: $t('page.account.users'),
         },
       },
-      {
-        name: 'OperationLog',
-        path: '/account/logs',
-        component: () => import('#/views/account/logs/index.vue'),
-        meta: {
-          icon: 'lucide:file-clock',
-          title: $t('page.account.logs'),
-        },
-      },
     ],
   },
 ];

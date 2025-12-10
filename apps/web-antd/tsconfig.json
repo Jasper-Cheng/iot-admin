@@ -8,5 +8,10 @@
     }
   },
   "references": [{ "path": "./tsconfig.node.json" }],
-  "include": ["src/**/*.ts", "src/**/*.tsx", "src/**/*.vue"]
+  "include": ["src/**/*.ts", "src/**/*.tsx", "src/**/*.vue"],
+  "exclude": [
+    "src/views/device/thing-model/modules/events-modal.vue",
+    "src/views/device/thing-model/modules/properties-modal.vue",
+    "src/views/device/thing-model/modules/services-modal.vue"
+  ]
 }

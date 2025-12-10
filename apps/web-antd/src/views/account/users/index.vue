@@ -1,9 +1,11 @@
 <script lang="ts" setup>
-import type {
-  OnActionClickParams,
-  VxeTableGridOptions,
-} from '#/adapter/vxe-table';
+import type { VxeTableGridOptions } from '#/adapter/vxe-table';
 import type { UserApi } from '#/api/iot/user';
+
+interface OnActionClickParams<T> {
+  code: string;
+  row: T;
+}
 
 import { Page } from '@vben/common-ui';
 

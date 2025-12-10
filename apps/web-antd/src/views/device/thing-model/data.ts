@@ -1,10 +1,14 @@
 import type { VbenFormSchema } from '#/adapter/form';
-import type { OnActionClickFn, VxeTableGridOptions } from '#/adapter/vxe-table';
+import type { VxeTableGridOptions } from '#/adapter/vxe-table';
 import type { ThingModelApi } from '#/api/iot/thing-model';
 
-import { h } from 'vue';
 
-import { Tag } from 'ant-design-vue';
+interface OnActionClickParams<T> {
+  code: string;
+  row: T;
+}
+
+type OnActionClickFn<T> = (e: OnActionClickParams<T>) => void;
 
 /** 表单 Schema */
 export function useFormSchema(): VbenFormSchema[] {
@@ -16,25 +20,6 @@ export function useFormSchema(): VbenFormSchema[] {
       rules: 'required',
       componentProps: {
         placeholder: '请输入物模型名称',
-      },
-    },
-    {
-      component: 'Input',
-      fieldName: 'code',
-      label: '标识符',
-      rules: 'required',
-      componentProps: {
-        placeholder: '请输入唯一标识符',
-      },
-    },
-    {
-      component: 'Input',
-      fieldName: 'version',
-      label: '版本',
-      rules: 'required',
-      defaultValue: '1.0.0',
-      componentProps: {
-        placeholder: '如 1.0.0',
       },
     },
     {
@@ -105,6 +90,53 @@ const statusMap: Record<string, { color: string; text: string }> = {
   published: { text: '已发布', color: 'success' },
 };
 
+// 解析属性JSON并格式化显示
+function formatProperties(properties: Record<string, any> | string | undefined): string {
+  if (!properties) return '-';
+  try {
+    const props = typeof properties === 'string' ? JSON.parse(properties) : properties;
+    if (!props || typeof props !== 'object') return '-';
+    const keys = Object.keys(props);
+    return keys.length > 0 ? keys.join(', ') : '-';
+  } catch {
+    return '-';
+  }
+}
+
+// 解析服务JSON并格式化显示
+function formatServices(services: string[] | Record<string, any> | string | undefined): string {
+  if (!services) return '-';
+  try {
+    let serviceList: string[] = [];
+    if (typeof services === 'string') {
+      const parsed = JSON.parse(services);
+      serviceList = Array.isArray(parsed) ? parsed : [];
+    } else if (Array.isArray(services)) {
+      serviceList = services;
+    }
+    return serviceList.length > 0 ? serviceList.join(', ') : '-';
+  } catch {
+    return '-';
+  }
+}
+
+// 解析事件JSON并格式化显示
+function formatEvents(events: string[] | Record<string, any> | string | undefined): string {
+  if (!events) return '-';
+  try {
+    let eventList: string[] = [];
+    if (typeof events === 'string') {
+      const parsed = JSON.parse(events);
+      eventList = Array.isArray(parsed) ? parsed : [];
+    } else if (Array.isArray(events)) {
+      eventList = events;
+    }
+    return eventList.length > 0 ? eventList.join(', ') : '-';
+  } catch {
+    return '-';
+  }
+}
+
 /** 表格列定义 */
 export function useColumns<T = ThingModelApi.ThingModel>(
   onActionClick: OnActionClickFn<T>,
@@ -121,43 +153,47 @@ export function useColumns<T = ThingModelApi.ThingModel>(
       minWidth: 150,
     },
     {
-      field: 'code',
-      title: '标识符',
-      width: 150,
-    },
-    {
-      field: 'version',
-      title: '版本',
-      width: 100,
-    },
-    {
-      field: 'status',
-      title: '状态',
-      width: 100,
-      slots: {
-        default: ({ row }) => {
-          const status = statusMap[row.status] || {
-            text: row.status,
-            color: 'default',
-          };
-          return h(Tag, { color: status.color }, () => status.text);
-        },
-      },
-    },
-    {
-      field: 'deviceCount',
-      title: '关联设备',
-      width: 100,
-    },
-    {
       field: 'description',
       title: '描述',
       minWidth: 200,
       showOverflow: true,
     },
     {
-      field: 'updatedAt',
-      title: '更新时间',
+      field: 'properties',
+      title: '属性',
+      minWidth: 200,
+      showOverflow: true,
+      slots: {
+        default: ({ row }) => {
+          return formatProperties(row.properties);
+        },
+      },
+    },
+    {
+      field: 'services',
+      title: '服务',
+      minWidth: 200,
+      showOverflow: true,
+      slots: {
+        default: ({ row }) => {
+          return formatServices(row.services);
+        },
+      },
+    },
+    {
+      field: 'events',
+      title: '事件',
+      minWidth: 200,
+      showOverflow: true,
+      slots: {
+        default: ({ row }) => {
+          return formatEvents(row.events);
+        },
+      },
+    },
+    {
+      field: 'createdAt',
+      title: '创建时间',
       width: 180,
     },
     {
@@ -167,13 +203,14 @@ export function useColumns<T = ThingModelApi.ThingModel>(
           nameField: 'name',
           nameTitle: '物模型',
           onClick: onActionClick,
+          actions: ['edit', 'delete'],
         },
         name: 'CellOperation',
       },
       field: 'operation',
       fixed: 'right',
       title: '操作',
-      width: 130,
+      width: 150,
     },
   ];
 }
@@ -187,3 +224,5 @@ export const propertyTypeOptions = [
   { label: '枚举', value: 'enum' },
   { label: '日期时间', value: 'datetime' },
 ];
+
+
