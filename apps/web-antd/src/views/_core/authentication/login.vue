@@ -1,5 +1,6 @@
 <script lang="ts" setup>
 import type { VbenFormSchema } from '@vben/common-ui';
+import type { Recordable } from '@vben/types';
 
 import { computed, markRaw } from 'vue';
 
@@ -41,6 +42,23 @@ const formSchema = computed((): VbenFormSchema[] => {
     },
   ];
 });
+
+async function handleLogin(values: Recordable<any>) {
+  console.log('[Login] Form submitted with values:', values);
+  console.log('[Login] Captcha value:', values.captcha, 'Type:', typeof values.captcha);
+  
+  // 确保验证码已通过
+  if (!values.captcha) {
+    console.warn('[Login] Captcha validation failed, captcha value is:', values.captcha);
+    return;
+  }
+  
+  try {
+    await authStore.authLogin(values);
+  } catch (error) {
+    console.error('[Login] Login error:', error);
+  }
+}
 </script>
 
 <template>
@@ -52,6 +70,6 @@ const formSchema = computed((): VbenFormSchema[] => {
     :show-qrcode-login="false"
     :show-register="false"
     :show-third-party-login="false"
-    @submit="authStore.authLogin"
+    @submit="handleLogin"
   />
 </template>
