@@ -73,7 +73,15 @@ export function getDevice(id: number) {
 }
 
 /** 更新设备 */
-export function updateDevice(id: number, data: Partial<DeviceApi.Device>) {
+export function updateDevice(
+  id: number,
+  data: {
+    name?: string;
+    modelId?: number;
+    accountId?: number | null; // null 表示解绑用户
+    familyIds?: number[]; // 空数组表示移除所有家庭关联
+  },
+) {
   return requestClient.put(`/iot/device/${id}`, data);
 }
 

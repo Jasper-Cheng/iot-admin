@@ -7,7 +7,6 @@ import { useAppConfig } from '@vben/hooks';
 import { preferences } from '@vben/preferences';
 import {
   authenticateResponseInterceptor,
-  defaultResponseInterceptor,
   errorMessageResponseInterceptor,
   RequestClient,
 } from '@vben/request';
@@ -50,8 +49,7 @@ function createRequestClient(baseURL: string, options?: RequestClientOptions) {
    */
   async function doRefreshToken() {
     const accessStore = useAccessStore();
-    const resp = await refreshTokenApi();
-    const newToken = resp.data;
+    const newToken = await refreshTokenApi();
     accessStore.setAccessToken(newToken);
     return newToken;
   }
@@ -71,14 +69,8 @@ function createRequestClient(baseURL: string, options?: RequestClientOptions) {
     },
   });
 
-  // 处理返回的响应数据格式
-  client.addResponseInterceptor(
-    defaultResponseInterceptor({
-      codeField: 'code',
-      dataField: 'data',
-      successCode: 0,
-    }),
-  );
+  // 响应直接返回数据，不使用包装格式
+  // 后端接口直接返回数据，异常直接抛出 HTTP 异常
 
   // token过期的处理
   client.addResponseInterceptor(
@@ -107,7 +99,9 @@ function createRequestClient(baseURL: string, options?: RequestClientOptions) {
 }
 
 export const requestClient = createRequestClient(apiURL, {
-  responseReturn: 'data',
+  // 后端接口直接返回数据，不使用包装格式
+  // responseReturn: 'body' 返回响应数据的 BODY 部分，不做 code 检查
+  responseReturn: 'body',
 });
 
 export const baseRequestClient = new RequestClient({ baseURL: apiURL });

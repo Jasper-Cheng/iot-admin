@@ -72,8 +72,3 @@ export function updateUser(id: number, data: UserApi.UpdateUserParams) {
 export function deleteUser(id: number) {
   return requestClient.delete(`/iot/user/${id}`);
 }
-
-/** 禁用/启用用户 */
-export function updateUserStatus(id: number, status: 'active' | 'disabled') {
-  return requestClient.put(`/iot/user/${id}/status`, { status });
-}
