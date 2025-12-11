@@ -23,6 +23,7 @@ import {
 } from 'ant-design-vue';
 
 import { getDevice, getDeviceMessageList } from '#/api/iot/device';
+import { getFamilyList } from '#/api/iot/family';
 
 const route = useRoute();
 const router = useRouter();
@@ -35,12 +36,7 @@ const device = ref<DeviceApi.Device | null>(null);
 const messages = ref<DeviceApi.DeviceMessage[]>([]);
 const messagesLoading = ref(false);
 
-// Mock 家庭数据
-const families = [
-  { id: 1, name: '我的家' },
-  { id: 2, name: '李四的家' },
-  { id: 3, name: '赵六的家' },
-];
+const families = ref<Array<{ id: number; name: string }>>([]);
 
 const statusMap: Record<string, { color: string; text: string }> = {
   online: { text: '在线', color: 'success' },
@@ -81,6 +77,20 @@ async function loadMessages() {
   }
 }
 
+async function loadFamilies() {
+  try {
+    const res = await getFamilyList({
+      pageSize: 100,
+    });
+    families.value = res.items.map((item) => ({
+      id: item.id,
+      name: item.name,
+    }));
+  } catch {
+    // ignore
+  }
+}
+
 function onTabChange(key: string) {
   activeTab.value = key;
   router.replace({ query: { ...route.query, tab: key } });
@@ -107,7 +117,7 @@ async function onFamilyChange(familyId: number) {
     if (!device.value.familyNames) {
       device.value.familyNames = [];
     }
-    const familyName = families.find((f) => f.id === familyId)?.name;
+    const familyName = families.value.find((f) => f.id === familyId)?.name;
     if (familyName && !device.value.familyNames.includes(familyName)) {
       device.value.familyNames.push(familyName);
     }
@@ -124,6 +134,7 @@ const messageColumns = [
 
 onMounted(() => {
   loadDevice();
+  loadFamilies();
 });
 
 watch(deviceId, () => {

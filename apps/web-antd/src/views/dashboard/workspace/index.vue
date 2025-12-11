@@ -14,6 +14,7 @@ import { useUserStore } from '@vben/stores';
 import { Card, Statistic, Tag } from 'ant-design-vue';
 
 import { getFeedbackList } from '#/api/iot/feedback';
+import { getDeviceMessageList } from '#/api/iot/device';
 import { getLogList } from '#/api/iot/log';
 import type { LogApi } from '#/api/iot/log';
 
@@ -51,104 +52,8 @@ async function loadPendingFeedbacks() {
       page: 1,
       pageSize: 10,
     });
-    // 如果数据不够多，添加一些模拟数据以测试滚动
     const items = res.items || [];
-    if (items.length < 8) {
-      // 添加模拟反馈数据
-      const mockFeedbacks: FeedbackApi.Feedback[] = [
-        {
-          id: 1001,
-          accountId: 1,
-          accountName: '张三',
-          name: '张三',
-          type: 'bug',
-          content: '设备连接不稳定，经常掉线，希望能优化网络连接',
-          status: 'pending',
-          source: 'app',
-          createdAt: new Date().toISOString(),
-        },
-        {
-          id: 1002,
-          accountId: 2,
-          accountName: '李四',
-          name: '李四',
-          type: 'feature',
-          content: '希望增加设备定时开关功能，方便远程控制',
-          status: 'pending',
-          source: 'web',
-          createdAt: new Date(Date.now() - 3600000).toISOString(),
-        },
-        {
-          id: 1003,
-          accountId: 3,
-          accountName: '王五',
-          name: '王五',
-          type: 'complaint',
-          content: '设备响应速度太慢，操作延迟明显',
-          status: 'pending',
-          source: 'app',
-          createdAt: new Date(Date.now() - 7200000).toISOString(),
-        },
-        {
-          id: 1004,
-          accountId: 4,
-          accountName: '赵六',
-          name: '赵六',
-          type: 'improvement',
-          content: '建议增加设备分组功能，方便管理多个设备',
-          status: 'pending',
-          source: 'web',
-          createdAt: new Date(Date.now() - 10800000).toISOString(),
-        },
-        {
-          id: 1005,
-          accountId: 5,
-          accountName: '钱七',
-          name: '钱七',
-          type: 'bug',
-          content: 'APP闪退问题，在查看设备详情时经常崩溃',
-          status: 'pending',
-          source: 'app',
-          createdAt: new Date(Date.now() - 14400000).toISOString(),
-        },
-        {
-          id: 1006,
-          accountId: 6,
-          accountName: '孙八',
-          name: '孙八',
-          type: 'feature',
-          content: '希望支持语音控制功能，可以通过语音助手控制设备',
-          status: 'pending',
-          source: 'web',
-          createdAt: new Date(Date.now() - 18000000).toISOString(),
-        },
-        {
-          id: 1007,
-          accountId: 7,
-          accountName: '周九',
-          name: '周九',
-          type: 'other',
-          content: '设备外观设计很好，但希望能有更多颜色选择',
-          status: 'pending',
-          source: 'app',
-          createdAt: new Date(Date.now() - 21600000).toISOString(),
-        },
-        {
-          id: 1008,
-          accountId: 8,
-          accountName: '吴十',
-          name: '吴十',
-          type: 'bug',
-          content: '数据同步有问题，手机端和网页端数据不一致',
-          status: 'pending',
-          source: 'web',
-          createdAt: new Date(Date.now() - 25200000).toISOString(),
-        },
-      ];
-      pendingFeedbacks.value = [...items, ...mockFeedbacks].slice(0, 10);
-    } else {
-      pendingFeedbacks.value = items;
-    }
+    pendingFeedbacks.value = items.slice(0, 10);
   } catch {
     // 忽略错误
   } finally {
@@ -160,105 +65,27 @@ async function loadPendingFeedbacks() {
 async function loadTodayAlerts() {
   loadingAlerts.value = true;
   try {
-    // 模拟今日告警数据
     const now = new Date();
     const todayStr = now.toISOString().split('T')[0];
     
-    // 生成今日不同时间的告警（增加更多数据以测试滚动）
-    const mockAlerts: DeviceApi.DeviceMessage[] = [
-      {
-        id: 1,
-        deviceId: 1,
-        deviceSn: 'TEMP001-2024-001',
-        deviceName: '客厅温度传感器',
-        level: 'error',
-        status: 'new',
-        message: '温度异常：当前温度 45°C，超过安全阈值 40°C',
-        detail: { temperature: 45, threshold: 40 },
-        createdAt: `${todayStr} ${String(now.getHours() - 1).padStart(2, '0')}:30:00`,
-      },
-      {
-        id: 2,
-        deviceId: 2,
-        deviceSn: 'HUM001-2024-001',
-        deviceName: '卧室湿度传感器',
-        level: 'fatal',
-        status: 'new',
-        message: '设备离线：已超过30分钟未收到数据，请检查设备连接',
-        detail: { lastOnlineTime: `${todayStr} ${String(now.getHours() - 1).padStart(2, '0')}:00:00` },
-        createdAt: `${todayStr} ${String(now.getHours() - 1).padStart(2, '0')}:35:00`,
-      },
-      {
-        id: 3,
-        deviceId: 3,
-        deviceSn: 'ENV001-2024-001',
-        deviceName: '客厅环境监测器',
-        level: 'error',
-        status: 'read',
-        message: 'PM2.5浓度超标：当前值 180 μg/m³，超过标准值 75 μg/m³',
-        detail: { pm25: 180, standard: 75 },
-        createdAt: `${todayStr} ${String(now.getHours() - 2).padStart(2, '0')}:15:00`,
-      },
-      {
-        id: 4,
-        deviceId: 4,
-        deviceSn: 'M701001-2024-001',
-        deviceName: '主卧空气质量监测器',
-        level: 'error',
-        status: 'new',
-        message: 'CO2浓度过高：当前值 1200 ppm，超过健康标准 1000 ppm',
-        detail: { co2: 1200, standard: 1000 },
-        createdAt: `${todayStr} ${String(now.getHours() - 3).padStart(2, '0')}:45:00`,
-      },
-      {
-        id: 5,
-        deviceId: 5,
-        deviceSn: 'TEMP001-2024-002',
-        deviceName: '书房温度传感器',
-        level: 'fatal',
-        status: 'new',
-        message: '传感器故障：错误代码 E05，温度读数异常，需要立即检修',
-        detail: { errorCode: 'E05', errorType: 'sensor_fault' },
-        createdAt: `${todayStr} ${String(now.getHours() - 4).padStart(2, '0')}:20:00`,
-      },
-      {
-        id: 6,
-        deviceId: 6,
-        deviceSn: 'AIR001-2024-001',
-        deviceName: '厨房空气净化器',
-        level: 'error',
-        status: 'new',
-        message: '滤网寿命到期：当前使用率 100%，需要更换滤网',
-        detail: { filterUsage: 100 },
-        createdAt: `${todayStr} ${String(now.getHours() - 5).padStart(2, '0')}:10:00`,
-      },
-      {
-        id: 7,
-        deviceId: 7,
-        deviceSn: 'SMOKE001-2024-001',
-        deviceName: '烟雾报警器',
-        level: 'fatal',
-        status: 'new',
-        message: '检测到烟雾：烟雾浓度异常，请立即检查',
-        detail: { smokeLevel: 85 },
-        createdAt: `${todayStr} ${String(now.getHours() - 6).padStart(2, '0')}:00:00`,
-      },
-      {
-        id: 8,
-        deviceId: 8,
-        deviceSn: 'DOOR001-2024-001',
-        deviceName: '智能门锁',
-        level: 'error',
-        status: 'read',
-        message: '电池电量低：当前电量 15%，建议更换电池',
-        detail: { batteryLevel: 15 },
-        createdAt: `${todayStr} ${String(now.getHours() - 7).padStart(2, '0')}:30:00`,
-      },
-    ];
+    // 获取今日的告警消息
+    const res = await getDeviceMessageList({
+      level: 'error',
+      page: 1,
+      pageSize: 10,
+    });
     
-    todayAlerts.value = mockAlerts.sort((a, b) => {
-      // 按时间倒序排列
-      return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+    // 过滤出今日的消息
+    const items = res.items || [];
+    const todayItems = items.filter((item) => {
+      const itemDate = item.createdAt?.split('T')[0] || item.updatedAt?.split('T')[0];
+      return itemDate === todayStr;
+    });
+    
+    todayAlerts.value = todayItems.sort((a, b) => {
+      const timeA = new Date(a.updatedAt || a.createdAt).getTime();
+      const timeB = new Date(b.updatedAt || b.createdAt).getTime();
+      return timeB - timeA;
     });
   } catch {
     // 忽略错误
