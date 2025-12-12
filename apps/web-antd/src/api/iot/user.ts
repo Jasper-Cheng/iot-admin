@@ -58,6 +58,17 @@ export function getUserList(params: UserApi.UserListParams) {
   });
 }
 
+/** 获取今日新增用户列表 */
+export function getTodayNewUsers(params: { page?: number; pageSize?: number }) {
+  return requestClient.get<{
+    items: UserApi.AppUser[];
+    total: number;
+    date: string;
+  }>('/user/today', {
+    params,
+  });
+}
+
 /** 创建用户 */
 export function createUser(data: UserApi.CreateUserParams) {
   return requestClient.post('/user', data);

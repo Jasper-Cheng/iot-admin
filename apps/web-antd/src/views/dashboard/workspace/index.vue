@@ -13,9 +13,10 @@ import { useUserStore } from '@vben/stores';
 import { Card, Statistic, Tag } from 'ant-design-vue';
 
 import { getFeedbackList } from '#/api/iot/feedback';
-import { getDeviceMessageList, getDeviceList } from '#/api/iot/device';
+import { getDeviceList, getTodayAlerts } from '#/api/iot/device';
 import { getLogList } from '#/api/iot/log';
 import type { LogApi } from '#/api/iot/log';
+import { getTodayNewUsers } from '#/api/iot/user';
 
 import { useVbenModal } from '@vben/common-ui';
 
@@ -33,34 +34,61 @@ const [ReplyModalComponent, replyModalApi] = useVbenModal({
 // 待办反馈列表
 const pendingFeedbacks = ref<FeedbackApi.Feedback[]>([]);
 const loadingFeedbacks = ref(false);
+const feedbackPage = ref(1);
+const feedbackHasMore = ref(true);
+const feedbackTotal = ref(0);
 
 // 今日告警列表
 const todayAlerts = ref<DeviceApi.DeviceMessage[]>([]);
 const loadingAlerts = ref(false);
+const alertsPage = ref(1);
+const alertsHasMore = ref(true);
+const alertsTotal = ref(0);
 
 // 操作日志列表
 const operationLogs = ref<LogApi.OperationLog[]>([]);
 const loadingLogs = ref(false);
+const logsPage = ref(1);
+const logsHasMore = ref(true);
 
 // 统计数据
 const statistics = ref([
   { title: '未绑定设备', value: 0, suffix: '台', url: '/device/list?status=unbound', loading: false },
-  { title: '今日在线用户', value: 0, suffix: '人', loading: false },
+  { title: '今日新增用户', value: 0, suffix: '人', loading: false },
   { title: '今日告警', value: 0, suffix: '条', loading: false },
   { title: '待处理反馈', value: 0, suffix: '条', loading: false },
 ]);
 
 // 加载未处理的反馈
-async function loadPendingFeedbacks() {
+async function loadPendingFeedbacks(reset = false) {
+  if (loadingFeedbacks.value || (!feedbackHasMore.value && !reset)) return;
+  
+  if (reset) {
+    feedbackPage.value = 1;
+    feedbackHasMore.value = true;
+    pendingFeedbacks.value = [];
+  }
+  
   loadingFeedbacks.value = true;
   try {
     const res = await getFeedbackList({
       status: 'pending',
-      page: 1,
+      page: feedbackPage.value,
       pageSize: 10,
     });
     const items = res.items || [];
-    pendingFeedbacks.value = items.slice(0, 10);
+    const total = res.total || 0;
+    
+    if (reset) {
+      pendingFeedbacks.value = items;
+    } else {
+      pendingFeedbacks.value.push(...items);
+    }
+    
+    feedbackTotal.value = total;
+    feedbackHasMore.value = pendingFeedbacks.value.length < total;
+    feedbackPage.value += 1;
+    
     updatePendingFeedbacksCount();
   } catch {
     // 忽略错误
@@ -70,31 +98,48 @@ async function loadPendingFeedbacks() {
 }
 
 // 加载今日告警
-async function loadTodayAlerts() {
+async function loadTodayAlerts(reset = false) {
+  if (loadingAlerts.value || (!alertsHasMore.value && !reset)) return;
+  
+  if (reset) {
+    alertsPage.value = 1;
+    alertsHasMore.value = true;
+    todayAlerts.value = [];
+  }
+  
   loadingAlerts.value = true;
   try {
-    const now = new Date();
-    const todayStr = now.toISOString().split('T')[0];
-    
-    // 获取今日的告警消息
-    const res = await getDeviceMessageList({
-      level: 'error',
-      page: 1,
+    // 使用专门的今日告警接口
+    const res = await getTodayAlerts({
+      page: alertsPage.value,
       pageSize: 10,
     });
     
-    // 过滤出今日的消息
     const items = res.items || [];
-    const todayItems = items.filter((item) => {
-      const itemDate = item.createdAt?.split('T')[0] || item.updatedAt?.split('T')[0];
-      return itemDate === todayStr;
-    });
+    const total = res.total || 0;
     
-    todayAlerts.value = todayItems.sort((a, b) => {
-      const timeA = new Date(a.updatedAt || a.createdAt).getTime();
-      const timeB = new Date(b.updatedAt || b.createdAt).getTime();
-      return timeB - timeA;
-    });
+    if (reset) {
+      todayAlerts.value = items.sort((a, b) => {
+        const timeA = new Date(a.updatedAt || a.createdAt).getTime();
+        const timeB = new Date(b.updatedAt || b.createdAt).getTime();
+        return timeB - timeA;
+      });
+    } else {
+      // 合并并去重
+      const existingIds = new Set(todayAlerts.value.map(item => item.id));
+      const newItems = items.filter(item => !existingIds.has(item.id));
+      todayAlerts.value.push(...newItems);
+      todayAlerts.value.sort((a, b) => {
+        const timeA = new Date(a.updatedAt || a.createdAt).getTime();
+        const timeB = new Date(b.updatedAt || b.createdAt).getTime();
+        return timeB - timeA;
+      });
+    }
+    
+    alertsTotal.value = total;
+    alertsHasMore.value = todayAlerts.value.length < total;
+    alertsPage.value += 1;
+    
     updateTodayAlertsCount();
   } catch {
     // 忽略错误
@@ -151,7 +196,46 @@ function openReplyModal(feedback: FeedbackApi.Feedback) {
 
 // 回复成功后刷新待办反馈列表
 function onReplySuccess() {
-  loadPendingFeedbacks();
+  loadPendingFeedbacks(true);
+}
+
+// 处理待办反馈列表滚动
+function handleFeedbackScroll(event: Event) {
+  const target = event.target as HTMLElement;
+  const scrollTop = target.scrollTop;
+  const scrollHeight = target.scrollHeight;
+  const clientHeight = target.clientHeight;
+  
+  // 距离底部50px时加载更多
+  if (scrollHeight - scrollTop - clientHeight < 50) {
+    loadPendingFeedbacks();
+  }
+}
+
+// 处理今日告警列表滚动
+function handleAlertsScroll(event: Event) {
+  const target = event.target as HTMLElement;
+  const scrollTop = target.scrollTop;
+  const scrollHeight = target.scrollHeight;
+  const clientHeight = target.clientHeight;
+  
+  // 距离底部50px时加载更多
+  if (scrollHeight - scrollTop - clientHeight < 50) {
+    loadTodayAlerts();
+  }
+}
+
+// 处理操作日志列表滚动
+function handleLogsScroll(event: Event) {
+  const target = event.target as HTMLElement;
+  const scrollTop = target.scrollTop;
+  const scrollHeight = target.scrollHeight;
+  const clientHeight = target.clientHeight;
+  
+  // 距离底部50px时加载更多
+  if (scrollHeight - scrollTop - clientHeight < 50) {
+    loadOperationLogs();
+  }
 }
 
 // 跳转到设备消息列表
@@ -165,17 +249,37 @@ function goToOperationLogs() {
 }
 
 // 加载操作日志
-async function loadOperationLogs() {
+async function loadOperationLogs(reset = false) {
+  if (loadingLogs.value || (!logsHasMore.value && !reset)) return;
+  
+  if (reset) {
+    logsPage.value = 1;
+    logsHasMore.value = true;
+    operationLogs.value = [];
+  }
+  
   loadingLogs.value = true;
   try {
     const res = await getLogList({
-      page: 1,
+      page: logsPage.value,
       pageSize: 10,
     });
-    operationLogs.value = res.items || [];
+    const items = res.items || [];
+    const total = res.total || 0;
+    
+    if (reset) {
+      operationLogs.value = items;
+    } else {
+      operationLogs.value.push(...items);
+    }
+    
+    logsHasMore.value = operationLogs.value.length < total;
+    logsPage.value += 1;
   } catch {
     // 忽略错误，使用默认数据
-    operationLogs.value = [];
+    if (reset) {
+      operationLogs.value = [];
+    }
   } finally {
     loadingLogs.value = false;
   }
@@ -201,29 +305,20 @@ async function loadUnboundDeviceCount() {
   }
 }
 
-// 加载今日在线用户数量
-async function loadTodayOnlineUsersCount() {
-  const stat = statistics.value.find(s => s.title === '今日在线用户');
+// 加载今日新增用户数量
+async function loadTodayNewUsersCount() {
+  const stat = statistics.value.find(s => s.title === '今日新增用户');
   if (!stat) return;
   
   stat.loading = true;
   try {
-    // 获取所有在线设备，然后统计拥有在线设备的用户数量
-    const deviceRes = await getDeviceList({
-      status: 'online',
+    // 使用专门的今日新增用户接口
+    const res = await getTodayNewUsers({
       page: 1,
-      pageSize: 1000, // 获取足够多的数据
+      pageSize: 1, // 只需要总数
     });
     
-    // 统计有在线设备的用户ID集合
-    const onlineDeviceAccountIds = new Set(
-      (deviceRes.items || [])
-        .map(device => device.accountId)
-        .filter((id): id is number => id !== undefined && id !== null)
-    );
-    
-    // 统计今日在线的用户（有在线设备的用户）
-    stat.value = onlineDeviceAccountIds.size;
+    stat.value = res.total || 0;
   } catch {
     stat.value = 0;
   } finally {
@@ -235,7 +330,9 @@ async function loadTodayOnlineUsersCount() {
 function updateTodayAlertsCount() {
   const stat = statistics.value.find(s => s.title === '今日告警');
   if (stat) {
-    stat.value = todayAlerts.value.length;
+    // 直接使用API返回的total，而不是todayAlerts数组的长度
+    // 因为todayAlerts只是分页加载的部分数据
+    stat.value = alertsTotal.value;
   }
 }
 
@@ -243,16 +340,18 @@ function updateTodayAlertsCount() {
 function updatePendingFeedbacksCount() {
   const stat = statistics.value.find(s => s.title === '待处理反馈');
   if (stat) {
-    stat.value = pendingFeedbacks.value.length;
+    // 直接使用API返回的total，而不是pendingFeedbacks数组的长度
+    // 因为pendingFeedbacks只是分页加载的部分数据
+    stat.value = feedbackTotal.value;
   }
 }
 
 onMounted(() => {
-  loadPendingFeedbacks();
-  loadTodayAlerts();
-  loadOperationLogs();
+  loadPendingFeedbacks(true);
+  loadTodayAlerts(true);
+  loadOperationLogs(true);
   loadUnboundDeviceCount();
-  loadTodayOnlineUsersCount();
+  loadTodayNewUsersCount();
 });
 
 // 操作类型映射
@@ -342,7 +441,10 @@ function onStatisticClick(stat: typeof statistics.value[0]) {
         <template #title>
           <span class="text-lg">待办反馈</span>
         </template>
-        <div class="flex-1 overflow-y-auto p-5 min-h-0 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
+        <div 
+          class="flex-1 overflow-y-auto p-5 min-h-0 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]"
+          @scroll="handleFeedbackScroll"
+        >
           <ul v-if="pendingFeedbacks.length > 0" class="divide-border w-full divide-y" role="list">
             <li
               v-for="feedback in pendingFeedbacks"
@@ -372,8 +474,14 @@ function onStatisticClick(stat: typeof statistics.value[0]) {
               </div>
             </li>
           </ul>
-          <div v-else class="py-10 text-center text-foreground/60 text-sm">
+          <div v-else-if="!loadingFeedbacks" class="py-10 text-center text-foreground/60 text-sm">
             暂无待处理反馈
+          </div>
+          <div v-if="loadingFeedbacks && pendingFeedbacks.length === 0" class="py-10 text-center text-foreground/60 text-sm">
+            加载中...
+          </div>
+          <div v-if="loadingFeedbacks && pendingFeedbacks.length > 0" class="py-4 text-center text-foreground/60 text-sm">
+            加载中...
           </div>
         </div>
       </Card>
@@ -386,7 +494,10 @@ function onStatisticClick(stat: typeof statistics.value[0]) {
         <template #title>
           <span class="text-lg">今日告警</span>
         </template>
-        <div class="flex-1 overflow-y-auto p-5 min-h-0 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
+        <div 
+          class="flex-1 overflow-y-auto p-5 min-h-0 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]"
+          @scroll="handleAlertsScroll"
+        >
           <ul v-if="todayAlerts.length > 0" class="divide-border w-full divide-y" role="list">
             <li
               v-for="alert in todayAlerts"
@@ -416,8 +527,14 @@ function onStatisticClick(stat: typeof statistics.value[0]) {
               </div>
             </li>
           </ul>
-          <div v-else class="py-10 text-center text-foreground/60 text-sm">
+          <div v-else-if="!loadingAlerts" class="py-10 text-center text-foreground/60 text-sm">
             今日暂无告警
+          </div>
+          <div v-if="loadingAlerts && todayAlerts.length === 0" class="py-10 text-center text-foreground/60 text-sm">
+            加载中...
+          </div>
+          <div v-if="loadingAlerts && todayAlerts.length > 0" class="py-4 text-center text-foreground/60 text-sm">
+            加载中...
           </div>
         </div>
       </Card>
@@ -430,7 +547,10 @@ function onStatisticClick(stat: typeof statistics.value[0]) {
         <template #title>
           <span class="text-lg">操作日志</span>
         </template>
-        <div class="flex-1 overflow-y-auto p-5 min-h-0 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
+        <div 
+          class="flex-1 overflow-y-auto p-5 min-h-0 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]"
+          @scroll="handleLogsScroll"
+        >
           <ul v-if="operationLogs.length > 0" class="divide-border w-full divide-y" role="list">
             <li
               v-for="log in operationLogs"
@@ -460,8 +580,14 @@ function onStatisticClick(stat: typeof statistics.value[0]) {
               </div>
             </li>
           </ul>
-          <div v-else class="py-10 text-center text-foreground/60 text-sm">
+          <div v-else-if="!loadingLogs" class="py-10 text-center text-foreground/60 text-sm">
             暂无操作日志
+          </div>
+          <div v-if="loadingLogs && operationLogs.length === 0" class="py-10 text-center text-foreground/60 text-sm">
+            加载中...
+          </div>
+          <div v-if="loadingLogs && operationLogs.length > 0" class="py-4 text-center text-foreground/60 text-sm">
+            加载中...
           </div>
         </div>
       </Card>

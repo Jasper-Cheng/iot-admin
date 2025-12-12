@@ -120,3 +120,14 @@ export function getDeviceMessageList(params: {
     },
   );
 }
+
+/** 获取今日告警列表 */
+export function getTodayAlerts(params: { page?: number; pageSize?: number }) {
+  return requestClient.get<{
+    items: DeviceApi.DeviceMessage[];
+    total: number;
+    date: string;
+  }>('/device-message/today-alerts', {
+    params,
+  });
+}
