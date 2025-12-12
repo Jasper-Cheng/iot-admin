@@ -2,7 +2,9 @@ import type { VbenFormSchema } from '#/adapter/form';
 import type { VxeTableGridOptions } from '#/adapter/vxe-table';
 import type { FamilyApi } from '#/api/iot/family';
 
-import { h } from 'vue';
+import { h, markRaw } from 'vue';
+
+import AvatarSelector from './components/avatar-selector.vue';
 
 interface OnActionClickParams<T> {
   code: string;
@@ -45,14 +47,11 @@ export function useFormSchema(): VbenFormSchema[] {
       },
     },
     {
-      component: 'Upload',
+      component: markRaw(AvatarSelector),
       fieldName: 'avatar',
       label: '头像',
       componentProps: {
-        listType: 'picture-card',
-        maxCount: 1,
-        accept: 'image/*',
-        beforeUpload: () => false, // 阻止自动上传，手动处理
+        avatars: Array.from({ length: 20 }, (_, i) => `/avatars/avatar${i + 1}.png`),
       },
     },
   ];
