@@ -8,13 +8,12 @@ import { useRouter } from 'vue-router';
 import {
   WorkbenchHeader,
 } from '@vben/common-ui';
-import { preferences } from '@vben/preferences';
 import { useUserStore } from '@vben/stores';
 
 import { Card, Statistic, Tag } from 'ant-design-vue';
 
 import { getFeedbackList } from '#/api/iot/feedback';
-import { getDeviceMessageList } from '#/api/iot/device';
+import { getDeviceMessageList, getDeviceList } from '#/api/iot/device';
 import { getLogList } from '#/api/iot/log';
 import type { LogApi } from '#/api/iot/log';
 
@@ -43,6 +42,14 @@ const loadingAlerts = ref(false);
 const operationLogs = ref<LogApi.OperationLog[]>([]);
 const loadingLogs = ref(false);
 
+// 统计数据
+const statistics = ref([
+  { title: '未绑定设备', value: 0, suffix: '台', url: '/device/list?status=unbound', loading: false },
+  { title: '今日在线用户', value: 0, suffix: '人', loading: false },
+  { title: '今日告警', value: 0, suffix: '条', loading: false },
+  { title: '待处理反馈', value: 0, suffix: '条', loading: false },
+]);
+
 // 加载未处理的反馈
 async function loadPendingFeedbacks() {
   loadingFeedbacks.value = true;
@@ -54,6 +61,7 @@ async function loadPendingFeedbacks() {
     });
     const items = res.items || [];
     pendingFeedbacks.value = items.slice(0, 10);
+    updatePendingFeedbacksCount();
   } catch {
     // 忽略错误
   } finally {
@@ -87,6 +95,7 @@ async function loadTodayAlerts() {
       const timeB = new Date(b.updatedAt || b.createdAt).getTime();
       return timeB - timeA;
     });
+    updateTodayAlertsCount();
   } catch {
     // 忽略错误
   } finally {
@@ -172,10 +181,78 @@ async function loadOperationLogs() {
   }
 }
 
+// 加载未绑定设备数量
+async function loadUnboundDeviceCount() {
+  const stat = statistics.value.find(s => s.title === '未绑定设备');
+  if (!stat) return;
+  
+  stat.loading = true;
+  try {
+    const res = await getDeviceList({
+      status: 'unbound',
+      page: 1,
+      pageSize: 1, // 只需要总数
+    });
+    stat.value = res.total || 0;
+  } catch {
+    stat.value = 0;
+  } finally {
+    stat.loading = false;
+  }
+}
+
+// 加载今日在线用户数量
+async function loadTodayOnlineUsersCount() {
+  const stat = statistics.value.find(s => s.title === '今日在线用户');
+  if (!stat) return;
+  
+  stat.loading = true;
+  try {
+    // 获取所有在线设备，然后统计拥有在线设备的用户数量
+    const deviceRes = await getDeviceList({
+      status: 'online',
+      page: 1,
+      pageSize: 1000, // 获取足够多的数据
+    });
+    
+    // 统计有在线设备的用户ID集合
+    const onlineDeviceAccountIds = new Set(
+      (deviceRes.items || [])
+        .map(device => device.accountId)
+        .filter((id): id is number => id !== undefined && id !== null)
+    );
+    
+    // 统计今日在线的用户（有在线设备的用户）
+    stat.value = onlineDeviceAccountIds.size;
+  } catch {
+    stat.value = 0;
+  } finally {
+    stat.loading = false;
+  }
+}
+
+// 更新今日告警数量
+function updateTodayAlertsCount() {
+  const stat = statistics.value.find(s => s.title === '今日告警');
+  if (stat) {
+    stat.value = todayAlerts.value.length;
+  }
+}
+
+// 更新待处理反馈数量
+function updatePendingFeedbacksCount() {
+  const stat = statistics.value.find(s => s.title === '待处理反馈');
+  if (stat) {
+    stat.value = pendingFeedbacks.value.length;
+  }
+}
+
 onMounted(() => {
   loadPendingFeedbacks();
   loadTodayAlerts();
   loadOperationLogs();
+  loadUnboundDeviceCount();
+  loadTodayOnlineUsersCount();
 });
 
 // 操作类型映射
@@ -198,15 +275,7 @@ const operationTypeMap: Record<string, { text: string; color: string }> = {
   feedback_create: { text: '创建反馈', color: 'purple' },
 };
 
-// 统计数据
-const statistics = [
-  { title: '未绑定设备', value: 12, suffix: '台', url: '/device/list?status=unbound' },
-  { title: '今日在线用户', value: 1280, suffix: '人' },
-  { title: '今日告警', value: 36, suffix: '条' },
-  { title: '待处理反馈', value: 15, suffix: '条' },
-];
-
-function onStatisticClick(stat: typeof statistics[0]) {
+function onStatisticClick(stat: typeof statistics.value[0]) {
   if (stat.url) {
     router.push(stat.url);
   }
