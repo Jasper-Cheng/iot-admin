@@ -2,7 +2,7 @@
 import type { VxeTableGridOptions } from '#/adapter/vxe-table';
 import type { DeviceApi } from '#/api/iot/device';
 
-import { onMounted, watch } from 'vue';
+import { computed, onMounted, watch } from 'vue';
 import { useRoute } from 'vue-router';
 
 import { Page, useVbenDrawer } from '@vben/common-ui';
@@ -28,23 +28,29 @@ const [FormDrawer, formDrawerApi] = useVbenDrawer({
   destroyOnClose: true,
 });
 
-// 从路由查询参数获取初始筛选条件
-function getFormValuesFromQuery() {
+// 从URL参数中获取表单值
+const getFormValuesFromQuery = () => {
   const query = route.query;
-  const values: Record<string, any> = {};
+  const formValues: Record<string, any> = {};
   
   if (query.status) {
-    values.status = query.status;
+    formValues.status = query.status as string;
   }
   if (query.sn) {
-    values.sn = query.sn;
+    formValues.sn = query.sn as string;
   }
   if (query.name) {
-    values.name = query.name;
+    formValues.name = query.name as string;
   }
   
-  return values;
-}
+  return formValues;
+};
+
+// 检查是否有URL查询参数
+const hasQueryParams = computed(() => {
+  const query = route.query;
+  return !!(query.status || query.sn || query.name);
+});
 
 const [Grid, gridApi] = useVbenVxeGrid({
   formOptions: {
@@ -56,6 +62,7 @@ const [Grid, gridApi] = useVbenVxeGrid({
     height: 'auto',
     keepSource: true,
     proxyConfig: {
+      autoLoad: !hasQueryParams.value, // 如果有查询参数，禁用自动加载
       ajax: {
         query: async ({ page }, formValues) => {
           const result = await getDeviceList({
@@ -127,27 +134,26 @@ watch(
       gridApi.formApi.setValues(values);
       // 延迟触发查询，确保表单值已更新
       setTimeout(() => {
-        gridApi.reload(values);
+        gridApi.reload();
       }, 100);
     } else {
       // 如果查询参数为空，清空表单并重新查询
       gridApi.formApi.setValues({});
-      gridApi.reload({});
+      gridApi.reload();
     }
   },
   { immediate: false },
 );
 
-// 页面加载时，如果有查询参数，自动设置表单值并触发查询
+// 页面加载时，如果有查询参数，自动设置表单值（submitOnChange 会自动触发查询）
 onMounted(async () => {
   const initialValues = getFormValuesFromQuery();
   if (Object.keys(initialValues).length > 0) {
     // 等待表单 API 准备就绪
     await new Promise((resolve) => setTimeout(resolve, 200));
-    // 确保表单值已设置
-    await gridApi.formApi.setValues(initialValues);
-    // 触发查询
-    gridApi.reload(initialValues);
+    
+    // 设置表单值，submitOnChange 会自动触发查询
+    await gridApi.formApi.setValues(initialValues, true, false);
   }
 });
 </script>

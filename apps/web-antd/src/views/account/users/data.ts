@@ -194,6 +194,17 @@ export function useGridFormSchema(): VbenFormSchema[] {
       fieldName: 'gender',
       label: '性别',
     },
+    {
+      component: 'RangePicker',
+      fieldName: 'dateRange',
+      label: '创建时间',
+      componentProps: {
+        placeholder: ['开始日期', '结束日期'],
+        format: 'YYYY-MM-DD',
+        valueFormat: 'YYYY-MM-DD',
+        allowClear: true,
+      },
+    },
   ];
 }
 

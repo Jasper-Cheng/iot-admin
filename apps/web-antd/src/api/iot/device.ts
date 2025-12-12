@@ -112,6 +112,8 @@ export function getDeviceMessageList(params: {
   type?: string;
   status?: 'new' | 'read';
   deviceSn?: string;
+  startDate?: string; // 开始日期 YYYY-MM-DD
+  endDate?: string; // 结束日期 YYYY-MM-DD
 }) {
   return requestClient.get<{ items: DeviceApi.DeviceMessage[]; total: number }>(
     '/device-message/list',

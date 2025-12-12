@@ -25,6 +25,8 @@ export namespace UserApi {
     phone?: string;
     email?: string;
     gender?: 'male' | 'female' | 'other';
+    startDate?: string; // 开始日期 YYYY-MM-DD
+    endDate?: string; // 结束日期 YYYY-MM-DD
   }
 
   export interface UserListResult {

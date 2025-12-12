@@ -52,11 +52,14 @@ const logsPage = ref(1);
 const logsHasMore = ref(true);
 
 // 统计数据
+// 获取今日日期字符串 (YYYY-MM-DD)
+const todayStr = new Date().toISOString().split('T')[0];
+
 const statistics = ref([
   { title: '未绑定设备', value: 0, suffix: '台', url: '/device/list?status=unbound', loading: false },
-  { title: '今日新增用户', value: 0, suffix: '人', loading: false },
-  { title: '今日告警', value: 0, suffix: '条', loading: false },
-  { title: '待处理反馈', value: 0, suffix: '条', loading: false },
+  { title: '今日新增用户', value: 0, suffix: '人', url: `/account/users?startDate=${todayStr}&endDate=${todayStr}`, loading: false },
+  { title: '今日告警', value: 0, suffix: '条', url: `/device/message?startDate=${todayStr}&endDate=${todayStr}`, loading: false },
+  { title: '待处理反馈', value: 0, suffix: '条', url: '/system/feedback?status=pending', loading: false },
 ]);
 
 // 加载未处理的反馈
