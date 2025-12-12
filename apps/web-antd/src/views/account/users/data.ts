@@ -9,11 +9,13 @@ interface OnActionClickParams<T> {
 
 type OnActionClickFn<T> = (e: OnActionClickParams<T>) => void;
 
-import { h } from 'vue';
+import { h, markRaw } from 'vue';
 
 import { Tag } from 'ant-design-vue';
 
 import { z } from '#/adapter/form';
+
+import AvatarSelector from './components/avatar-selector.vue';
 
 /** 表单 Schema - 用于新增/编辑 */
 export function useFormSchema(): VbenFormSchema[] {
@@ -40,7 +42,7 @@ export function useFormSchema(): VbenFormSchema[] {
       component: 'Input',
       fieldName: 'email',
       label: '邮箱',
-      rules: 'email',
+      rules: z.string().email({ message: '邮箱格式不正确' }).optional().or(z.literal('')),
       componentProps: {
         placeholder: '请输入邮箱（可选）',
       },
@@ -80,27 +82,11 @@ export function useFormSchema(): VbenFormSchema[] {
       },
     },
     {
-      component: 'Select',
+      component: markRaw(AvatarSelector),
       fieldName: 'avatar',
       label: '头像',
       componentProps: {
-        placeholder: '请选择头像',
-        allowClear: true,
-        options: Array.from({ length: 20 }, (_, i) => ({
-          label: `头像 ${i + 1}`,
-          value: `/avatars/avatar${i + 1}.png`,
-        })),
-      },
-      suffix: ({ formValues }: { formValues: any }) => {
-        const avatarPath = formValues?.avatar;
-        if (!avatarPath) return null;
-        return h('img', {
-          src: avatarPath,
-          style: 'width: 48px; height: 48px; border-radius: 4px; object-fit: cover; margin-left: 8px;',
-          onError: (e: Event) => {
-            (e.target as HTMLImageElement).src = '/avatars/no-avatar.png';
-          },
-        });
+        avatars: Array.from({ length: 20 }, (_, i) => `/avatars/avatar${i + 1}.png`),
       },
     },
     {
