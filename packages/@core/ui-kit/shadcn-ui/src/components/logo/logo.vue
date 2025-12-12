@@ -61,7 +61,9 @@ const logoSrc = computed(() => {
     return props.srcDark;
   }
   // 否则使用默认的 src
-  return props.src;
+  // 确保空字符串不会被当作有效值
+  const src = props.src || '';
+  return src.trim() || undefined;
 });
 </script>
 

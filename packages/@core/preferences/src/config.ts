@@ -65,6 +65,7 @@ const defaultPreferences: Preferences = {
     enable: true,
     fit: 'contain',
     source: '', // 使用空字符串，避免外部资源被跟踪防护阻止
+    sourceDark: '', // 暗色主题 logo 也设置为空字符串
   },
   navigation: {
     accordion: true,

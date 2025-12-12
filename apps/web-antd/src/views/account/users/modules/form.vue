@@ -1,6 +1,5 @@
 <script lang="ts" setup>
 import type { UserApi } from '#/api/iot/user';
-import type { UploadFile } from 'ant-design-vue';
 
 import { computed, nextTick, ref } from 'vue';
 
@@ -14,34 +13,6 @@ import { useFormSchema } from '../data';
 const emits = defineEmits(['success']);
 
 const formData = ref<UserApi.AppUser>();
-
-// 将文件转换为 base64
-function fileToBase64(file: File): Promise<string> {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.readAsDataURL(file);
-    reader.onload = () => resolve(reader.result as string);
-    reader.onerror = (error) => reject(error);
-  });
-}
-
-// 从 fileList 中提取头像 URL
-async function getAvatarFromFileList(fileList?: UploadFile[]): Promise<string | undefined> {
-  if (!fileList || fileList.length === 0) {
-    return undefined;
-  }
-
-  const file = fileList[0];
-  // 如果文件已经有 URL（编辑时已有的头像）
-  if (file.url) {
-    return file.url;
-  }
-  // 如果是新上传的文件，转换为 base64
-  if (file.originFileObj) {
-    return await fileToBase64(file.originFileObj);
-  }
-  return undefined;
-}
 
 const [Form, formApi] = useVbenForm({
   schema: useFormSchema(),
@@ -58,15 +29,10 @@ const [Drawer, drawerApi] = useVbenDrawer({
     drawerApi.lock();
 
     try {
-      // 处理头像上传
-      const avatar = await getAvatarFromFileList(values.avatar);
       const payload = { ...values };
-      // 移除 fileList 和 confirmPassword，只保留 avatar URL
-      delete (payload as any).avatar;
+      // 移除 confirmPassword，avatar 已经是路径字符串
       delete (payload as any).confirmPassword;
-      if (avatar) {
-        (payload as any).avatar = avatar;
-      }
+      // avatar 字段已经是选择的头像路径（如 /avatars/avatar1.png）
 
       await (id.value ? updateUser(id.value, payload) : createUser(payload));
       emits('success');
@@ -91,20 +57,10 @@ const [Drawer, drawerApi] = useVbenDrawer({
 
       await nextTick();
       if (data && data.id) {
-        // 如果有头像 URL，转换为 fileList 格式
-        const fileList = data.avatar
-          ? [
-              {
-                uid: '-1',
-                name: 'avatar',
-                status: 'done',
-                url: data.avatar,
-              } as UploadFile,
-            ]
-          : [];
+        // 直接设置头像路径
         formApi.setValues({
           ...data,
-          avatar: fileList,
+          avatar: data.avatar || undefined,
         });
       }
     }

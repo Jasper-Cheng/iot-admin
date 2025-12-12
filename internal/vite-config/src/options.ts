@@ -9,16 +9,18 @@ const getDefaultPwaOptions = (name: string): Partial<PwaPluginOptions> => ({
     description:
       'Vben Admin is a modern admin dashboard template based on Vue 3. ',
     icons: [
-      {
-        sizes: '192x192',
-        src: 'https://unpkg.com/@vbenjs/static-source@0.1.7/source/pwa-icon-192.png',
-        type: 'image/png',
-      },
-      {
-        sizes: '512x512',
-        src: 'https://unpkg.com/@vbenjs/static-source@0.1.7/source/pwa-icon-512.png',
-        type: 'image/png',
-      },
+      // 使用空数组，避免外部资源被跟踪防护阻止
+      // 如果需要 PWA 图标，请将图标文件放在 public 目录中，然后使用本地路径
+      // {
+      //   sizes: '192x192',
+      //   src: '/pwa-icon-192.png',
+      //   type: 'image/png',
+      // },
+      // {
+      //   sizes: '512x512',
+      //   src: '/pwa-icon-512.png',
+      //   type: 'image/png',
+      // },
     ],
     name: `${name}${isDevelopment ? ' dev' : ''}`,
     short_name: `${name}${isDevelopment ? ' dev' : ''}`,

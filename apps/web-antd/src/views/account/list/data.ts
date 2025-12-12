@@ -80,14 +80,27 @@ export function useFormSchema(): VbenFormSchema[] {
       },
     },
     {
-      component: 'Upload',
+      component: 'Select',
       fieldName: 'avatar',
       label: '头像',
       componentProps: {
-        listType: 'picture-card',
-        maxCount: 1,
-        accept: 'image/*',
-        beforeUpload: () => false, // 阻止自动上传，手动处理
+        placeholder: '请选择头像',
+        allowClear: true,
+        options: Array.from({ length: 20 }, (_, i) => ({
+          label: `头像 ${i + 1}`,
+          value: `/avatars/avatar${i + 1}.png`,
+        })),
+      },
+      suffix: ({ formValues }: { formValues: any }) => {
+        const avatarPath = formValues?.avatar;
+        if (!avatarPath) return null;
+        return h('img', {
+          src: avatarPath,
+          style: 'width: 48px; height: 48px; border-radius: 4px; object-fit: cover; margin-left: 8px;',
+          onError: (e: Event) => {
+            (e.target as HTMLImageElement).src = '/avatars/no-avatar.png';
+          },
+        });
       },
     },
     {
@@ -151,7 +164,7 @@ export function useColumns<T = AccountApi.Admin>(
       },
       field: 'avatar',
       title: '头像',
-      width: 80,
+      width: 70,
     },
     {
       field: 'nickname',

@@ -42,7 +42,19 @@ setupVbenVxeTable({
     vxeUI.renderer.add('CellImage', {
       renderTableDefault(_renderOpts, params) {
         const { column, row } = params;
-        return h(Image, { src: row[column.field] });
+        const avatarValue = row[column.field];
+        // 如果头像值为空，显示默认头像
+        const avatarSrc = avatarValue || '/avatars/no-avatar.png';
+        return h('div', {
+          style: { 'margin-top': '4px', display: 'inline-block' },
+        }, [
+          h(Image, {
+            src: avatarSrc,
+            style: { width: '32px', height: '32px', 'object-fit': 'cover', 'border-radius': '4px' },
+            preview: false, // 禁用预览功能
+            fallback: '/avatars/no-avatar.png', // 加载失败时显示默认头像
+          }),
+        ]);
       },
     });
 
