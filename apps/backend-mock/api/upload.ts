@@ -8,7 +8,7 @@ export default eventHandler((event) => {
     return unAuthorizedResponse(event);
   }
   return useResponseSuccess({
-    url: 'https://unpkg.com/@vbenjs/static-source@0.1.7/source/logo-v1.webp',
+    url: '', // 使用空字符串，避免外部资源被跟踪防护阻止
   });
   // return useResponseError("test")
 });

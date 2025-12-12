@@ -47,14 +47,14 @@ export namespace VersionApi {
 
 /** 获取版本列表 */
 export function getVersionList(params: VersionApi.VersionListParams) {
-  return requestClient.get<VersionApi.VersionListResult>('/iot/version/list', {
+  return requestClient.get<VersionApi.VersionListResult>('/version/list', {
     params,
   });
 }
 
 /** 创建版本 */
 export function createVersion(data: VersionApi.CreateVersionParams) {
-  return requestClient.post('/iot/version', data);
+  return requestClient.post('/version', data);
 }
 
 /** 更新版本 */
@@ -62,15 +62,15 @@ export function updateVersion(
   id: number,
   data: Partial<VersionApi.CreateVersionParams>,
 ) {
-  return requestClient.put(`/iot/version/${id}`, data);
+  return requestClient.put(`/version/${id}`, data);
 }
 
 /** 删除版本 */
 export function deleteVersion(id: number) {
-  return requestClient.delete(`/iot/version/${id}`);
+  return requestClient.delete(`/version/${id}`);
 }
 
 /** 发布版本 */
 export function publishVersion(id: number) {
-  return requestClient.post(`/iot/version/${id}/publish`);
+  return requestClient.post(`/version/${id}/publish`);
 }

@@ -62,14 +62,14 @@ export namespace DeviceApi {
 
 /** 获取设备列表 */
 export function getDeviceList(params: DeviceApi.DeviceListParams) {
-  return requestClient.get<DeviceApi.DeviceListResult>('/iot/device/list', {
+  return requestClient.get<DeviceApi.DeviceListResult>('/device/list', {
     params,
   });
 }
 
 /** 获取设备详情 */
 export function getDevice(id: number) {
-  return requestClient.get<DeviceApi.Device>(`/iot/device/${id}`);
+  return requestClient.get<DeviceApi.Device>(`/device/${id}`);
 }
 
 /** 更新设备 */
@@ -82,12 +82,12 @@ export function updateDevice(
     familyIds?: number[]; // 空数组表示移除所有家庭关联
   },
 ) {
-  return requestClient.put(`/iot/device/${id}`, data);
+  return requestClient.put(`/device/${id}`, data);
 }
 
 /** 删除设备 */
 export function deleteDevice(id: number) {
-  return requestClient.delete(`/iot/device/${id}`);
+  return requestClient.delete(`/device/${id}`);
 }
 
 /** 获取设备网络信息列表 */
@@ -96,7 +96,7 @@ export function getDeviceNetworkList(params: {
   pageSize?: number;
 }) {
   return requestClient.get<{ items: DeviceApi.NetworkInfo[]; total: number }>(
-    '/iot/network/list',
+    '/network/list',
     {
       params,
     },
@@ -110,9 +110,11 @@ export function getDeviceMessageList(params: {
   page?: number;
   pageSize?: number;
   type?: string;
+  status?: 'new' | 'read';
+  deviceSn?: string;
 }) {
   return requestClient.get<{ items: DeviceApi.DeviceMessage[]; total: number }>(
-    '/iot/device-message/list',
+    '/device-message/list',
     {
       params,
     },

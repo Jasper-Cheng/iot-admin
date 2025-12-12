@@ -1,4 +1,4 @@
-import type { Recordable, UserInfo } from '@vben/types';
+import type { UserInfo } from '@vben/types';
 
 import { ref } from 'vue';
 import { useRouter } from 'vue-router';
@@ -9,8 +9,8 @@ import { resetAllStores, useAccessStore, useUserStore } from '@vben/stores';
 
 import { defineStore } from 'pinia';
 
-import { getUserInfoApi, loginApi, logoutApi } from '#/api';
-import { $t } from '#/locales';
+import { getUserInfoApi, loginApi } from '#/api';
+import type { AuthApi } from '#/api/core/auth';
 
 export const useAuthStore = defineStore('auth', () => {
   const accessStore = useAccessStore();
@@ -25,7 +25,7 @@ export const useAuthStore = defineStore('auth', () => {
    * @param params 登录表单数据
    */
   async function authLogin(
-    params: Recordable<any>,
+    params: AuthApi.LoginParams,
     onSuccess?: () => Promise<void> | void,
   ) {
     // 异步处理用户登录操作并获取 accessToken
@@ -49,8 +49,9 @@ export const useAuthStore = defineStore('auth', () => {
           if (onSuccess) {
             await onSuccess?.();
           } else {
-            const redirectPath = userInfo.homePath || preferences.app.defaultHomePath;
-            console.log('[Login] Redirect path:', redirectPath, 'userInfo.homePath:', userInfo.homePath, 'defaultHomePath:', preferences.app.defaultHomePath);
+            // 强制使用 /dashboard，忽略后端返回的 homePath 和 preferences 中的值
+            const redirectPath = '/dashboard';
+            console.log('[Login] Redirect path:', redirectPath, 'defaultHomePath:', preferences.app.defaultHomePath);
             await router.push(redirectPath);
           }
         }
@@ -67,11 +68,7 @@ export const useAuthStore = defineStore('auth', () => {
   }
 
   async function logout(redirect: boolean = true) {
-    try {
-      await logoutApi();
-    } catch {
-      // 不做任何处理
-    }
+    // 登出不需要调用接口，直接清除本地数据
     resetAllStores();
     accessStore.setLoginExpired(false);
 

@@ -524,13 +524,7 @@ export const useTabbarStore = defineStore('core-tabbar', {
       return [...this.affixTabs, ...normalTabs].filter(Boolean);
     },
   },
-  persist: [
-    // tabs不需要保存在localStorage
-    {
-      pick: ['tabs'],
-      storage: sessionStorage,
-    },
-  ],
+  persist: false, // 路由标签页不持久化存储
   state: (): TabbarState => ({
     cachedTabs: new Set(),
     dragEndIndex: 0,

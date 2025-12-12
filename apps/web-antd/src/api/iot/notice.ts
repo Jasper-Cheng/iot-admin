@@ -42,14 +42,14 @@ export namespace NoticeApi {
 
 /** 获取消息列表 */
 export function getNoticeList(params: NoticeApi.NoticeListParams) {
-  return requestClient.get<NoticeApi.NoticeListResult>('/iot/notice/list', {
+  return requestClient.get<NoticeApi.NoticeListResult>('/notice/list', {
     params,
   });
 }
 
 /** 创建消息 */
 export function createNotice(data: NoticeApi.CreateNoticeParams) {
-  return requestClient.post('/iot/notice', data);
+  return requestClient.post('/notice', data);
 }
 
 /** 更新消息 */
@@ -57,15 +57,15 @@ export function updateNotice(
   id: number,
   data: Partial<NoticeApi.CreateNoticeParams>,
 ) {
-  return requestClient.put(`/iot/notice/${id}`, data);
+  return requestClient.put(`/notice/${id}`, data);
 }
 
 /** 删除消息 */
 export function deleteNotice(id: number) {
-  return requestClient.delete(`/iot/notice/${id}`);
+  return requestClient.delete(`/notice/${id}`);
 }
 
 /** 发布消息 */
 export function publishNotice(id: number) {
-  return requestClient.post(`/iot/notice/${id}/publish`);
+  return requestClient.post(`/notice/${id}/publish`);
 }

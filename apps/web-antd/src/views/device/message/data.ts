@@ -47,6 +47,19 @@ export function useGridFormSchema(): VbenFormSchema[] {
       fieldName: 'level',
       label: '消息级别',
     },
+    {
+      component: 'Select',
+      componentProps: {
+        allowClear: true,
+        options: [
+          { label: '未读', value: 'new' },
+          { label: '已读', value: 'read' },
+        ],
+        placeholder: '请选择状态',
+      },
+      fieldName: 'status',
+      label: '消息状态',
+    },
   ];
 }
 

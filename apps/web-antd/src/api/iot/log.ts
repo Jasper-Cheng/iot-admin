@@ -46,7 +46,7 @@ export namespace LogApi {
 
 /** 获取操作日志列表 */
 export function getLogList(params: LogApi.LogListParams) {
-  return requestClient.get<LogApi.LogListResult>('/iot/log/list', {
+  return requestClient.get<LogApi.LogListResult>('/log/list', {
     params,
   });
 }

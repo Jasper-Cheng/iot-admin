@@ -53,10 +53,9 @@ function setupAccessGuard(router: Router) {
     // 基本路由，这些路由不需要进入权限拦截
     if (coreRouteNames.includes(to.name as string)) {
       if (to.path === LOGIN_PATH && accessStore.accessToken) {
+        // 后端不返回 homePath，统一使用 defaultHomePath
         return decodeURIComponent(
-          (to.query?.redirect as string) ||
-            userStore.userInfo?.homePath ||
-            preferences.app.defaultHomePath,
+          (to.query?.redirect as string) || preferences.app.defaultHomePath,
         );
       }
       return true;
@@ -107,9 +106,10 @@ function setupAccessGuard(router: Router) {
     accessStore.setAccessMenus(accessibleMenus);
     accessStore.setAccessRoutes(accessibleRoutes);
     accessStore.setIsAccessChecked(true);
+    // 后端不返回 homePath，统一使用 defaultHomePath
     const redirectPath = (from.query.redirect ??
       (to.path === preferences.app.defaultHomePath
-        ? userInfo.homePath || preferences.app.defaultHomePath
+        ? preferences.app.defaultHomePath
         : to.fullPath)) as string;
 
     return {

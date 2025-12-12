@@ -71,35 +71,35 @@ export namespace FamilyApi {
 
 /** 获取家庭列表 */
 export function getFamilyList(params: FamilyApi.FamilyListParams) {
-  return requestClient.get<FamilyApi.FamilyListResult>('/iot/family/list', {
+  return requestClient.get<FamilyApi.FamilyListResult>('/family/list', {
     params,
   });
 }
 
 /** 获取家庭详情 */
 export function getFamily(id: number) {
-  return requestClient.get<FamilyApi.Family>(`/iot/family/${id}`);
+  return requestClient.get<FamilyApi.Family>(`/family/${id}`);
 }
 
 /** 创建家庭 */
 export function createFamily(data: FamilyApi.CreateFamilyParams) {
-  return requestClient.post('/iot/family', data);
+  return requestClient.post('/family', data);
 }
 
 /** 更新家庭 */
 export function updateFamily(id: number, data: FamilyApi.UpdateFamilyParams) {
-  return requestClient.put(`/iot/family/${id}`, data);
+  return requestClient.put(`/family/${id}`, data);
 }
 
 /** 删除家庭 */
 export function deleteFamily(id: number) {
-  return requestClient.delete(`/iot/family/${id}`);
+  return requestClient.delete(`/family/${id}`);
 }
 
 /** 获取家庭成员列表 */
 export function getFamilyMemberList(params: FamilyApi.FamilyMemberListParams) {
   return requestClient.get<FamilyApi.FamilyMemberListResult>(
-    `/iot/family/${params.familyId}/members`,
+    `/family/${params.familyId}/members`,
     {
       params: {
         page: params.page,
@@ -111,7 +111,7 @@ export function getFamilyMemberList(params: FamilyApi.FamilyMemberListParams) {
 
 /** 添加家庭成员 */
 export function addFamilyMember(data: FamilyApi.AddFamilyMemberParams) {
-  return requestClient.post(`/iot/family/${data.familyId}/members`, {
+  return requestClient.post(`/family/${data.familyId}/members`, {
     accountId: data.accountId,
     nickname: data.nickname,
   });
@@ -119,6 +119,6 @@ export function addFamilyMember(data: FamilyApi.AddFamilyMemberParams) {
 
 /** 移除家庭成员 */
 export function removeFamilyMember(familyId: number, memberId: number) {
-  return requestClient.delete(`/iot/family/${familyId}/members/${memberId}`);
+  return requestClient.delete(`/family/${familyId}/members/${memberId}`);
 }
 

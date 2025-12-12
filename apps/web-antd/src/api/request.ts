@@ -3,7 +3,6 @@
  */
 import type { RequestClientOptions } from '@vben/request';
 
-import { useAppConfig } from '@vben/hooks';
 import { preferences } from '@vben/preferences';
 import {
   authenticateResponseInterceptor,
@@ -16,9 +15,8 @@ import { message } from 'ant-design-vue';
 
 import { useAuthStore } from '#/store';
 
-import { refreshTokenApi } from './core';
-
-const { apiURL } = useAppConfig(import.meta.env, import.meta.env.PROD);
+// 固定使用 /api/v1/iot 作为 API 基础路径（与后端地址 http://localhost:8000/api/v1/iot 对应）
+const apiURL = '/api/v1/iot';
 
 function createRequestClient(baseURL: string, options?: RequestClientOptions) {
   const client = new RequestClient({
@@ -45,13 +43,11 @@ function createRequestClient(baseURL: string, options?: RequestClientOptions) {
   }
 
   /**
-   * 刷新token逻辑
+   * 刷新token逻辑（已禁用）
    */
-  async function doRefreshToken() {
-    const accessStore = useAccessStore();
-    const newToken = await refreshTokenApi();
-    accessStore.setAccessToken(newToken);
-    return newToken;
+  async function doRefreshToken(): Promise<string> {
+    // 刷新 token 功能已禁用，直接抛出错误
+    throw new Error('Refresh token is disabled');
   }
 
   function formatToken(token: null | string) {
@@ -72,13 +68,29 @@ function createRequestClient(baseURL: string, options?: RequestClientOptions) {
   // 响应直接返回数据，不使用包装格式
   // 后端接口直接返回数据，异常直接抛出 HTTP 异常
 
-  // token过期的处理
+  // 处理 responseReturn: 'body' 选项，直接返回响应数据的 body 部分
+  client.addResponseInterceptor({
+    fulfilled: (response) => {
+      const { config, data: responseData, status } = response;
+      
+      // 如果配置了 responseReturn: 'body'，直接返回响应数据的 body 部分
+      if (config.responseReturn === 'body' && status >= 200 && status < 400) {
+        return responseData;
+      }
+      
+      // 其他情况返回原始响应
+      return response;
+    },
+    rejected: (error) => Promise.reject(error),
+  });
+
+  // token过期的处理（禁用刷新 token 功能）
   client.addResponseInterceptor(
     authenticateResponseInterceptor({
       client,
       doReAuthenticate,
       doRefreshToken,
-      enableRefreshToken: preferences.app.enableRefreshToken,
+      enableRefreshToken: false, // 禁用刷新 token
       formatToken,
     }),
   );
@@ -86,10 +98,9 @@ function createRequestClient(baseURL: string, options?: RequestClientOptions) {
   // 通用的错误处理,如果没有进入上面的错误处理逻辑，就会进入这里
   client.addResponseInterceptor(
     errorMessageResponseInterceptor((msg: string, error) => {
-      // 这里可以根据业务进行定制,你可以拿到 error 内的信息进行定制化处理，根据不同的 code 做不同的提示，而不是直接使用 message.error 提示 msg
-      // 当前mock接口返回的错误字段是 error 或者 message
+      // 优先显示后端返回的 detail 字段，如果没有则显示 error 或 message
       const responseData = error?.response?.data ?? {};
-      const errorMessage = responseData?.error ?? responseData?.message ?? '';
+      const errorMessage = responseData?.detail ?? responseData?.error ?? responseData?.message ?? '';
       // 如果没有错误信息，则会根据状态码进行提示
       message.error(errorMessage || msg);
     }),

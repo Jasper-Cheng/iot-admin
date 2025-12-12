@@ -15,8 +15,7 @@ const defaultPreferences: Preferences = {
     contentPaddingLeft: 0,
     contentPaddingRight: 0,
     contentPaddingTop: 0,
-    defaultAvatar:
-      'https://unpkg.com/@vbenjs/static-source@0.1.7/source/avatar-v1.webp',
+    defaultAvatar: '', // 使用空字符串，避免外部资源被跟踪防护阻止
     defaultHomePath: '/dashboard',
     dynamicTitle: true,
     enableCheckUpdates: true,
@@ -65,7 +64,7 @@ const defaultPreferences: Preferences = {
   logo: {
     enable: true,
     fit: 'contain',
-    source: 'https://unpkg.com/@vbenjs/static-source@0.1.7/source/logo-v1.webp',
+    source: '', // 使用空字符串，避免外部资源被跟踪防护阻止
   },
   navigation: {
     accordion: true,

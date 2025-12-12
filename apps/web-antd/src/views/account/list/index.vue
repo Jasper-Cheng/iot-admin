@@ -38,6 +38,7 @@ const [Grid, gridApi] = useVbenVxeGrid({
           return await getAdminList({
             page: page.currentPage,
             pageSize: page.pageSize,
+            role: 'admin', // 只显示管理员
             ...formValues,
           });
         },

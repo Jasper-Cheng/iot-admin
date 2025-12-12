@@ -50,22 +50,24 @@ export namespace AccountApi {
 
 /** 获取管理员列表 */
 export function getAdminList(params: AccountApi.AdminListParams) {
-  return requestClient.get<AccountApi.AdminListResult>('/iot/account/list', {
+  return requestClient.get<AccountApi.AdminListResult>('/account/list', {
     params,
   });
 }
 
 /** 创建管理员 */
 export function createAdmin(data: AccountApi.CreateAdminParams) {
-  return requestClient.post('/iot/account', data);
+  return requestClient.post('/account', data);
 }
 
 /** 更新管理员 */
 export function updateAdmin(id: number, data: AccountApi.UpdateAdminParams) {
-  return requestClient.put(`/iot/account/${id}`, data);
+  return requestClient.put(`/account/${id}`, data);
 }
 
 /** 删除管理员 */
 export function deleteAdmin(id: number) {
-  return requestClient.delete(`/iot/account/${id}`);
+  // 接口路径: /api/v1/iot/auth/account/{id}
+  // baseURL 是 /api/v1/iot，所以这里使用 /auth/account/{id}
+  return requestClient.delete(`/auth/account/${id}`);
 }

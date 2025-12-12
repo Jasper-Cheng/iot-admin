@@ -100,13 +100,14 @@ export const useAccessStore = defineStore('core-access', {
     },
   },
   persist: {
-    // 持久化
+    // 持久化 - 路由信息不持久化存储
     pick: [
       'accessToken',
       'refreshToken',
       'accessCodes',
       'isLockScreen',
       'lockScreenPassword',
+      // 注意：accessRoutes 和 accessMenus 不持久化，每次登录后重新生成
     ],
   },
   state: (): AccessState => ({

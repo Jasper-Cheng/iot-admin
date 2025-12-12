@@ -36,7 +36,7 @@ export namespace ThingModelApi {
 /** 获取物模型列表 */
 export function getThingModelList(params: ThingModelApi.ThingModelListParams) {
   return requestClient.get<ThingModelApi.ThingModelListResult>(
-    '/iot/thing-model/list',
+    '/thing-model/list',
     {
       params,
     },
@@ -45,12 +45,12 @@ export function getThingModelList(params: ThingModelApi.ThingModelListParams) {
 
 /** 获取物模型详情 */
 export function getThingModel(id: number) {
-  return requestClient.get<ThingModelApi.ThingModel>(`/iot/thing-model/${id}`);
+  return requestClient.get<ThingModelApi.ThingModel>(`/thing-model/${id}`);
 }
 
 /** 创建物模型 */
 export function createThingModel(data: ThingModelApi.CreateThingModelParams) {
-  return requestClient.post('/iot/thing-model', data);
+  return requestClient.post('/thing-model', data);
 }
 
 /** 更新物模型 */
@@ -58,15 +58,15 @@ export function updateThingModel(
   id: number,
   data: Partial<ThingModelApi.CreateThingModelParams>,
 ) {
-  return requestClient.put(`/iot/thing-model/${id}`, data);
+  return requestClient.put(`/thing-model/${id}`, data);
 }
 
 /** 删除物模型 */
 export function deleteThingModel(id: number) {
-  return requestClient.delete(`/iot/thing-model/${id}`);
+  return requestClient.delete(`/thing-model/${id}`);
 }
 
 /** 发布物模型 */
 export function publishThingModel(id: number) {
-  return requestClient.post(`/iot/thing-model/${id}/publish`);
+  return requestClient.post(`/thing-model/${id}/publish`);
 }

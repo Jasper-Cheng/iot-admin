@@ -47,7 +47,7 @@ export namespace FeedbackApi {
 /** 获取反馈列表 */
 export function getFeedbackList(params: FeedbackApi.FeedbackListParams) {
   return requestClient.get<FeedbackApi.FeedbackListResult>(
-    '/iot/feedback/list',
+    '/feedback/list',
     {
       params,
     },
@@ -59,7 +59,7 @@ export function replyFeedback(
   id: number,
   data: FeedbackApi.ReplyFeedbackParams,
 ) {
-  return requestClient.put(`/iot/feedback/${id}/reply`, data);
+  return requestClient.put(`/feedback/${id}/reply`, data);
 }
 
 /** 更新反馈状态 */
@@ -67,5 +67,5 @@ export function updateFeedbackStatus(
   id: number,
   status: FeedbackApi.FeedbackStatus,
 ) {
-  return requestClient.put(`/iot/feedback/${id}/status`, { status });
+  return requestClient.put(`/feedback/${id}/status`, { status });
 }

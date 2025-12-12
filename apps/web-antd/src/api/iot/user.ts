@@ -53,22 +53,22 @@ export namespace UserApi {
 
 /** 获取 App 用户列表 */
 export function getUserList(params: UserApi.UserListParams) {
-  return requestClient.get<UserApi.UserListResult>('/iot/user/list', {
+  return requestClient.get<UserApi.UserListResult>('/user/list', {
     params,
   });
 }
 
 /** 创建用户 */
 export function createUser(data: UserApi.CreateUserParams) {
-  return requestClient.post('/iot/user', data);
+  return requestClient.post('/user', data);
 }
 
 /** 更新用户 */
 export function updateUser(id: number, data: UserApi.UpdateUserParams) {
-  return requestClient.put(`/iot/user/${id}`, data);
+  return requestClient.put(`/user/${id}`, data);
 }
 
 /** 删除用户 */
 export function deleteUser(id: number) {
-  return requestClient.delete(`/iot/user/${id}`);
+  return requestClient.delete(`/user/${id}`);
 }

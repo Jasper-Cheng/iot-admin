@@ -49,7 +49,7 @@ export function getDeviceModelList(
   params: DeviceModelApi.DeviceModelListParams,
 ) {
   return requestClient.get<DeviceModelApi.DeviceModelListResult>(
-    '/iot/device-model/list',
+    '/device-model/list',
     {
       params,
     },
@@ -59,7 +59,7 @@ export function getDeviceModelList(
 /** 获取所有设备型号（下拉选择用） */
 export function getAllDeviceModels() {
   return requestClient.get<DeviceModelApi.DeviceModel[]>(
-    '/iot/device-model/all',
+    '/device-model/all',
   );
 }
 
@@ -67,7 +67,7 @@ export function getAllDeviceModels() {
 export function createDeviceModel(
   data: DeviceModelApi.CreateDeviceModelParams,
 ) {
-  return requestClient.post('/iot/device-model', data);
+  return requestClient.post('/device-model', data);
 }
 
 /** 更新设备型号 */
@@ -75,10 +75,10 @@ export function updateDeviceModel(
   id: number,
   data: Partial<DeviceModelApi.CreateDeviceModelParams>,
 ) {
-  return requestClient.put(`/iot/device-model/${id}`, data);
+  return requestClient.put(`/device-model/${id}`, data);
 }
 
 /** 删除设备型号 */
 export function deleteDeviceModel(id: number) {
-  return requestClient.delete(`/iot/device-model/${id}`);
+  return requestClient.delete(`/device-model/${id}`);
 }
