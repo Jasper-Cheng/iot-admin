@@ -221,17 +221,27 @@ function onStatisticClick(stat: typeof statistics[0]) {
     
     <!-- 欢迎头部 -->
     <WorkbenchHeader
-      :avatar="userStore.userInfo?.avatar || preferences.app.defaultAvatar"
+      :avatar="userStore.userInfo?.avatar || '/avatars/no-avatar.png'"
       class="[&_.flex.flex-1.justify-end>div]:hidden [&_.flex.flex-1.justify-end]:after:content-['加油！每一天都是新的开始，让我们一起创造更美好的未来！'] [&_.flex.flex-1.justify-end]:after:text-foreground/80 [&_.flex.flex-1.justify-end]:after:text-lg [&_.flex.flex-1.justify-end]:after:font-medium [&_.flex.flex-1.justify-end]:after:text-right [&_.flex.flex-1.justify-end]:after:flex [&_.flex.flex-1.justify-end]:after:items-center"
     >
       <template #title>
-        早安, {{ userStore.userInfo?.realName || '管理员' }},
+        早安, {{ userStore.userInfo?.nickname || userStore.userInfo?.realName || '管理员' }},
         欢迎使用物联网管理平台！
       </template>
       <template #description>
-        <div class="flex items-center gap-2">
-          <span>今日晴，20℃ - 32℃</span>
-          <Tag color="blue">系统运行正常</Tag>
+        <div class="flex flex-col gap-1">
+          <div class="flex items-center gap-4">
+            <span v-if="userStore.userInfo?.phone" class="text-foreground/80">
+              电话：{{ userStore.userInfo.phone }}
+            </span>
+            <span v-if="userStore.userInfo?.email" class="text-foreground/80">
+              邮箱：{{ userStore.userInfo.email }}
+            </span>
+          </div>
+          <div class="flex items-center gap-2">
+            <span>今日晴，20℃ - 32℃</span>
+            <Tag color="blue">系统运行正常</Tag>
+          </div>
         </div>
       </template>
     </WorkbenchHeader>

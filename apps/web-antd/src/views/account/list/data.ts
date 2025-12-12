@@ -22,6 +22,12 @@ export function useFormSchema(): VbenFormSchema[] {
   return [
     {
       component: 'Input',
+      fieldName: 'id',
+      label: 'ID',
+      hide: true, // 隐藏字段，仅用于验证逻辑判断
+    },
+    {
+      component: 'Input',
       fieldName: 'nickname',
       label: '昵称',
       rules: 'required',
@@ -55,9 +61,40 @@ export function useFormSchema(): VbenFormSchema[] {
         placeholder: '请输入密码',
       },
       dependencies: {
-        show: (values) => !values.id,
-        rules: (values) => (values.id ? [] : ['required']),
+        componentProps: (values) => {
+          if (values?.id) {
+            return {
+              placeholder: '不输入则不修改密码',
+            };
+          }
+          return {
+            placeholder: '请输入密码',
+          };
+        },
+        rules: (values) => {
+          // 检查是否有 id（编辑模式）
+          const isEditMode = values?.id !== undefined && values?.id !== null && values?.id !== '';
+          if (isEditMode) {
+            // 编辑模式下，如果填写了确认密码，则密码也必须填写且一致
+            const confirmPassword = values.confirmPassword;
+            const hasConfirmPassword = confirmPassword && String(confirmPassword).trim().length > 0;
+            if (hasConfirmPassword) {
+              return z
+                .string({ required_error: '请输入密码' })
+                .min(1, { message: '请输入密码' })
+                .refine((value) => value === confirmPassword, {
+                  message: '两次输入的密码不一致',
+                });
+            }
+            // 编辑模式下密码不是必填的，返回 null 禁用验证
+            return null;
+          }
+          // 新增模式下密码是必填的
+          return 'required';
+        },
+        triggerFields: ['id', 'confirmPassword'],
       },
+      help: '编辑模式下不输入密码则不修改密码',
     },
     {
       component: 'InputPassword',
@@ -67,9 +104,25 @@ export function useFormSchema(): VbenFormSchema[] {
         placeholder: '请再次输入密码',
       },
       dependencies: {
-        show: (values) => !values.id,
         rules: (values) => {
-          if (values.id) return [];
+          // 检查是否有 id（编辑模式）
+          const isEditMode = values?.id !== undefined && values?.id !== null && values?.id !== '';
+          if (isEditMode) {
+            // 编辑模式下，如果填写了密码，则确认密码必须填写且一致
+            const password = values.password;
+            const hasPassword = password && String(password).trim().length > 0;
+            if (hasPassword) {
+              return z
+                .string({ required_error: '请再次输入密码' })
+                .min(1, { message: '请再次输入密码' })
+                .refine((value) => value === password, {
+                  message: '两次输入的密码不一致',
+                });
+            }
+            // 编辑模式下确认密码不是必填的，返回 null 禁用验证
+            return null;
+          }
+          // 新增模式下，两者都必须填写且一致
           const { password } = values;
           return z
             .string({ required_error: '请再次输入密码' })
@@ -78,7 +131,7 @@ export function useFormSchema(): VbenFormSchema[] {
               message: '两次输入的密码不一致',
             });
         },
-        triggerFields: ['password'],
+        triggerFields: ['id', 'password', 'confirmPassword'],
       },
     },
     {

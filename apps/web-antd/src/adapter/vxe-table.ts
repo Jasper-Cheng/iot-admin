@@ -44,13 +44,16 @@ setupVbenVxeTable({
         const { column, row } = params;
         const avatarValue = row[column.field];
         // 如果头像值为空，显示默认头像
-        const avatarSrc = avatarValue || '/avatars/no-avatar.png';
+        const hasAvatar = avatarValue && avatarValue.trim();
+        const avatarSrc = hasAvatar ? avatarValue : '/avatars/no-avatar.png';
+        // 没有头像时显示小一点
+        const size = hasAvatar ? '32px' : '24px';
         return h('div', {
           style: { 'margin-top': '4px', display: 'inline-block' },
         }, [
           h(Image, {
             src: avatarSrc,
-            style: { width: '32px', height: '32px', 'object-fit': 'cover', 'border-radius': '4px' },
+            style: { width: size, height: size, 'object-fit': 'cover', 'border-radius': '50%' },
             preview: false, // 禁用预览功能
             fallback: '/avatars/no-avatar.png', // 加载失败时显示默认头像
           }),

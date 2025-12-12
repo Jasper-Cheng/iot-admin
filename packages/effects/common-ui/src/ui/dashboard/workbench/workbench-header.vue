@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import { VbenAvatar } from '@vben-core/shadcn-ui';
+import { computed, ref, watch } from 'vue';
 
 interface Props {
   avatar?: string;
@@ -9,13 +9,45 @@ defineOptions({
   name: 'WorkbenchHeader',
 });
 
-withDefaults(defineProps<Props>(), {
+const props = withDefaults(defineProps<Props>(), {
   avatar: '',
 });
+
+// 当前显示的头像路径（用于错误处理）
+const currentAvatarSrc = ref<string>('');
+
+// 确保头像为空或无效时使用默认头像
+const avatarSrc = computed(() => {
+  return props.avatar && props.avatar.trim() ? props.avatar : '/avatars/no-avatar.png';
+});
+
+// 监听头像路径变化，重置错误状态
+watch(
+  () => avatarSrc.value,
+  (newSrc) => {
+    currentAvatarSrc.value = newSrc;
+  },
+  { immediate: true },
+);
+
+// 处理头像加载错误
+function handleAvatarError(e: Event) {
+  const target = e.target as HTMLImageElement;
+  if (target.src && !target.src.includes('/avatars/no-avatar.png')) {
+    target.src = '/avatars/no-avatar.png';
+  }
+}
 </script>
 <template>
   <div class="card-box p-4 py-6 lg:flex">
-    <VbenAvatar :src="avatar" class="size-20" />
+    <div class="relative size-20 flex-shrink-0">
+      <img
+        :src="avatarSrc"
+        alt="头像"
+        class="size-20 rounded-full object-cover"
+        @error="handleAvatarError"
+      />
+    </div>
     <div
       v-if="$slots.title || $slots.description"
       class="flex flex-col justify-center md:ml-6 md:mt-0"

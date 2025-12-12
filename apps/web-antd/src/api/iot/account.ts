@@ -40,11 +40,11 @@ export namespace AccountApi {
 
   export interface UpdateAdminParams {
     nickname?: string;
-    email?: string;
     phone?: string;
+    email?: string;
     avatar?: string;
     gender?: 'male' | 'female' | 'other';
-    role?: 'user' | 'admin';
+    password?: string; // RSA加密后的密码，可选
   }
 }
 
