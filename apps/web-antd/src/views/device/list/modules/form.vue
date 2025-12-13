@@ -223,7 +223,8 @@ const [Drawer, drawerApi] = useVbenDrawer({
       const payload: Partial<DeviceApi.Device> = {
         name: values.name,
         modelId: values.modelId,
-        accountId: values.accountId || undefined,
+        // 如果 accountId 为空（清空选择），传递 null；否则传递实际值
+        accountId: values.accountId === undefined || values.accountId === null ? null : values.accountId,
         familyIds: Array.isArray(values.familyIds) ? values.familyIds : undefined,
       };
       await updateDevice(id.value!, payload);
