@@ -23,6 +23,7 @@ export namespace DeviceApi {
     sn?: string;
     name?: string;
     modelId?: number;
+    accountId?: number;
     status?: string;
   }
 

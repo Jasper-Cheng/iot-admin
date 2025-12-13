@@ -42,6 +42,9 @@ const getFormValuesFromQuery = () => {
   if (query.name) {
     formValues.name = query.name as string;
   }
+  if (query.accountId) {
+    formValues.accountId = Number(query.accountId);
+  }
   
   return formValues;
 };
@@ -49,7 +52,7 @@ const getFormValuesFromQuery = () => {
 // 检查是否有URL查询参数
 const hasQueryParams = computed(() => {
   const query = route.query;
-  return !!(query.status || query.sn || query.name);
+  return !!(query.status || query.sn || query.name || query.accountId);
 });
 
 const [Grid, gridApi] = useVbenVxeGrid({

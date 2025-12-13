@@ -1,7 +1,7 @@
 <script lang="ts" setup>
 import { ref, watch } from 'vue';
 
-import { Button, Input, InputNumber, message, Select, Table } from 'ant-design-vue';
+import { Button, Input, InputNumber, message, Select, Switch, Table } from 'ant-design-vue';
 
 import { Plus } from '@vben/icons';
 
@@ -249,9 +249,20 @@ const columns = [
               }
             }"
           />
+          <Switch
+            v-else-if="record.type === 'boolean'"
+            :checked="record.default === true || record.default === 'true'"
+            size="small"
+            @change="(checked) => {
+              const key = record._key;
+              if (key) {
+                updateProperty(key, 'default', checked);
+              }
+            }"
+          />
           <InputNumber
-            v-else
-            :value="record.default"
+            v-else-if="record.type === 'int' || record.type === 'float'"
+            :value="typeof record.default === 'number' ? record.default : (record.default !== undefined && record.default !== null ? Number(record.default) : undefined)"
             size="small"
             style="width: 100%"
             @change="(value) => {
@@ -261,10 +272,23 @@ const columns = [
               }
             }"
           />
+          <Input
+            v-else
+            :value="record.default !== undefined && record.default !== null ? String(record.default) : ''"
+            size="small"
+            placeholder="默认值"
+            @change="(e) => {
+              const key = record._key;
+              if (key) {
+                updateProperty(key, 'default', e.target.value);
+              }
+            }"
+          />
         </template>
         <template v-else-if="column.key === 'min'">
           <InputNumber
-            :value="record.min"
+            v-if="record.type === 'int' || record.type === 'float'"
+            :value="typeof record.min === 'number' ? record.min : (record.min !== undefined && record.min !== null ? Number(record.min) : undefined)"
             size="small"
             style="width: 100%"
             @change="(value) => {
@@ -274,10 +298,12 @@ const columns = [
               }
             }"
           />
+          <span v-else class="text-gray-400">-</span>
         </template>
         <template v-else-if="column.key === 'max'">
           <InputNumber
-            :value="record.max"
+            v-if="record.type === 'int' || record.type === 'float'"
+            :value="typeof record.max === 'number' ? record.max : (record.max !== undefined && record.max !== null ? Number(record.max) : undefined)"
             size="small"
             style="width: 100%"
             @change="(value) => {
@@ -287,6 +313,7 @@ const columns = [
               }
             }"
           />
+          <span v-else class="text-gray-400">-</span>
         </template>
         <template v-else-if="column.key === 'enum'">
           <Input

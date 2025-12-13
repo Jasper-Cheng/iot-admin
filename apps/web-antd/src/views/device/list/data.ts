@@ -35,6 +35,32 @@ export function useGridFormSchema(): VbenFormSchema[] {
       },
     },
     {
+      component: 'ApiSelect',
+      fieldName: 'accountId',
+      label: '所属用户id',
+      componentProps: {
+        placeholder: '请选择所属用户id',
+        allowClear: true,
+        showSearch: true,
+        api: async (params?: any) => {
+          const { getUserList } = await import('#/api/iot/user');
+          const result = await getUserList({
+            page: params?.page || 1,
+            pageSize: params?.pageSize || 10,
+          });
+          return (result.items || []).map((user) => ({
+            label: `${user.id}_${user.nickname || user.phone}`,
+            value: user.id,
+          }));
+        },
+        resultField: '',
+        labelField: 'label',
+        valueField: 'value',
+        immediate: false,
+        visibleEvent: 'onDropdownVisibleChange',
+      },
+    },
+    {
       component: 'Select',
       componentProps: {
         allowClear: true,

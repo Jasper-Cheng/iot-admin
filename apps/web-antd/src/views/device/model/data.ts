@@ -14,7 +14,7 @@ interface OnActionClickParams<T> {
 type OnActionClickFn<T> = (e: OnActionClickParams<T>) => void;
 
 /** 表单 Schema */
-export function useFormSchema(): VbenFormSchema[] {
+export function useFormSchema(thingModelOptions?: Array<{ label: string; value: number }>): VbenFormSchema[] {
   return [
     {
       component: 'Input',
@@ -35,20 +35,25 @@ export function useFormSchema(): VbenFormSchema[] {
       },
     },
     {
-      component: 'ApiSelect',
+      component: thingModelOptions && thingModelOptions.length > 0 ? 'Select' : 'ApiSelect',
       fieldName: 'thingModelId',
       label: '物模型',
       rules: 'required',
-      componentProps: {
-        placeholder: '请选择物模型',
-        api: () =>
-          import('#/api/iot/thing-model').then((m) =>
-            m.getThingModelList({ pageSize: 100 }),
-          ),
-        resultField: 'items',
-        labelField: 'name',
-        valueField: 'id',
-      },
+      componentProps: thingModelOptions && thingModelOptions.length > 0
+        ? {
+            placeholder: '请选择物模型',
+            options: thingModelOptions,
+          }
+        : {
+            placeholder: '请选择物模型',
+            api: () =>
+              import('#/api/iot/thing-model').then((m) =>
+                m.getThingModelList({ pageSize: 100 }),
+              ),
+            resultField: 'items',
+            labelField: 'name',
+            valueField: 'id',
+          },
     },
     {
       component: 'Input',
@@ -89,6 +94,22 @@ export function useGridFormSchema(): VbenFormSchema[] {
       componentProps: {
         placeholder: '请输入型号编码',
         allowClear: true,
+      },
+    },
+    {
+      component: 'ApiSelect',
+      fieldName: 'thingModelId',
+      label: '物模型',
+      componentProps: {
+        placeholder: '请选择物模型',
+        allowClear: true,
+        api: () =>
+          import('#/api/iot/thing-model').then((m) =>
+            m.getThingModelList({ pageSize: 100 }),
+          ),
+        resultField: 'items',
+        labelField: 'name',
+        valueField: 'id',
       },
     },
     {

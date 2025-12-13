@@ -15,35 +15,135 @@ const emits = defineEmits(['success']);
 
 const formData = ref<DeviceApi.Device>();
 
+// 创建支持滚动加载的选项加载器
+function createScrollLoader(
+  apiFn: (params: { page: number; pageSize: number }) => Promise<{ items: any[]; total: number }>,
+  labelField: string,
+  valueField: string,
+) {
+  let currentPage = 1;
+  const pageSize = 10;
+  let allItems: any[] = [];
+  let total = 0;
+  let loading = false;
+  let hasMore = true;
+
+  const loadMore = async () => {
+    if (loading || !hasMore) {
+      return;
+    }
+
+    loading = true;
+    try {
+      const result = await apiFn({ page: currentPage, pageSize });
+      const items = result.items || [];
+      total = result.total || 0;
+
+      allItems.push(...items);
+      currentPage += 1;
+      hasMore = allItems.length < total;
+
+      return allItems.map((item) => ({
+        label: item[labelField] || item.phone || item.name,
+        value: item[valueField],
+      }));
+    } catch (error) {
+      console.error('Failed to load options:', error);
+      return allItems.map((item) => ({
+        label: item[labelField] || item.phone || item.name,
+        value: item[valueField],
+      }));
+    } finally {
+      loading = false;
+    }
+  };
+
+  const reset = () => {
+    currentPage = 1;
+    allItems = [];
+    hasMore = true;
+    loading = false;
+  };
+
+  const getOptions = () => {
+    return allItems.map((item) => ({
+      label: item[labelField] || item.phone || item.name,
+      value: item[valueField],
+    }));
+  };
+
+  return { loadMore, reset, getOptions };
+}
+
+// 创建三个滚动加载器
+const modelLoader = createScrollLoader(
+  async (params) => await getDeviceModelList(params),
+  'name',
+  'id',
+);
+
+const userLoader = createScrollLoader(
+  async (params) => await getUserList(params),
+  'nickname',
+  'id',
+);
+
+const familyLoader = createScrollLoader(
+  async (params) => await getFamilyList(params),
+  'name',
+  'id',
+);
+
+// 初始化选项
 const modelOptions = ref<Array<{ label: string; value: number }>>([]);
 const accountOptions = ref<Array<{ label: string; value: number }>>([]);
 const familyOptions = ref<Array<{ label: string; value: number }>>([]);
 
-// 加载选项数据
-async function loadOptions() {
-  try {
-    const [modelsResult, users, families] = await Promise.all([
-      getDeviceModelList({ page: 1, pageSize: 1000 }),
-      getUserList({ page: 1, pageSize: 1000 }),
-      getFamilyList({ page: 1, pageSize: 1000 }),
-    ]);
+// 加载初始数据
+async function loadInitialOptions() {
+  modelLoader.reset();
+  userLoader.reset();
+  familyLoader.reset();
 
-    modelOptions.value = modelsResult.items.map((model) => ({
-      label: model.name,
-      value: model.id,
-    }));
+  await Promise.all([
+    modelLoader.loadMore(),
+    userLoader.loadMore(),
+    familyLoader.loadMore(),
+  ]);
 
-    accountOptions.value = users.items.map((user) => ({
-      label: user.nickname || user.phone,
-      value: user.id,
-    }));
+  modelOptions.value = modelLoader.getOptions();
+  accountOptions.value = userLoader.getOptions();
+  familyOptions.value = familyLoader.getOptions();
+}
 
-    familyOptions.value = families.items.map((family) => ({
-      label: family.name,
-      value: family.id,
-    }));
-  } catch (error) {
-    console.error('Failed to load options:', error);
+// 处理滚动加载
+function handleModelScroll(e: Event) {
+  const target = e.target as HTMLElement;
+  const { scrollTop, scrollHeight, clientHeight } = target;
+  if (scrollHeight - scrollTop - clientHeight < 50) {
+    modelLoader.loadMore().then(() => {
+      modelOptions.value = modelLoader.getOptions();
+    });
+  }
+}
+
+function handleUserScroll(e: Event) {
+  const target = e.target as HTMLElement;
+  const { scrollTop, scrollHeight, clientHeight } = target;
+  if (scrollHeight - scrollTop - clientHeight < 50) {
+    userLoader.loadMore().then(() => {
+      accountOptions.value = userLoader.getOptions();
+    });
+  }
+}
+
+function handleFamilyScroll(e: Event) {
+  const target = e.target as HTMLElement;
+  const { scrollTop, scrollHeight, clientHeight } = target;
+  if (scrollHeight - scrollTop - clientHeight < 50) {
+    familyLoader.loadMore().then(() => {
+      familyOptions.value = familyLoader.getOptions();
+    });
   }
 }
 
@@ -61,12 +161,13 @@ const [Form, formApi] = useVbenForm({
     {
       component: 'Select',
       fieldName: 'modelId',
-      label: '型号',
+      label: '型号名称',
       rules: 'selectRequired',
       componentProps: {
-        placeholder: '请选择型号',
+        placeholder: '请选择型号名称',
         showSearch: true,
         options: modelOptions,
+        onPopupScroll: handleModelScroll,
         filterOption: (input: string, option: any) => {
           return option.label.toLowerCase().indexOf(input.toLowerCase()) >= 0;
         },
@@ -81,6 +182,7 @@ const [Form, formApi] = useVbenForm({
         allowClear: true,
         showSearch: true,
         options: accountOptions,
+        onPopupScroll: handleUserScroll,
         filterOption: (input: string, option: any) => {
           return option.label.toLowerCase().indexOf(input.toLowerCase()) >= 0;
         },
@@ -96,6 +198,9 @@ const [Form, formApi] = useVbenForm({
         mode: 'multiple',
         showSearch: true,
         options: familyOptions,
+        onPopupScroll: handleFamilyScroll,
+        style: { width: '100%' },
+        dropdownStyle: { minWidth: '300px' },
         filterOption: (input: string, option: any) => {
           return option.label.toLowerCase().indexOf(input.toLowerCase()) >= 0;
         },
@@ -131,7 +236,7 @@ const [Drawer, drawerApi] = useVbenDrawer({
 
   async onOpenChange(isOpen) {
     if (isOpen) {
-      await loadOptions();
+      await loadInitialOptions();
       const data = drawerApi.getData<DeviceApi.Device>();
       formApi.resetForm();
 

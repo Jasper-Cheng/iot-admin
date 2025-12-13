@@ -7,6 +7,8 @@ interface OnActionClickParams<T> {
   row: T;
 }
 
+import { onMounted, provide, ref } from 'vue';
+
 import { Page, useVbenDrawer } from '@vben/common-ui';
 import { Plus } from '@vben/icons';
 
@@ -14,9 +16,28 @@ import { Button, message, Modal } from 'ant-design-vue';
 
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
 import { deleteDeviceModel, getDeviceModelList } from '#/api/iot/device-model';
+import { getThingModelList } from '#/api/iot/thing-model';
 
 import { useColumns, useGridFormSchema } from './data';
 import Form from './modules/form.vue';
+
+// 预加载物模型列表，供表单组件使用
+const thingModelOptions = ref<Array<{ label: string; value: number }>>([]);
+
+onMounted(async () => {
+  try {
+    const res = await getThingModelList({ pageSize: 100 });
+    thingModelOptions.value = (res.items || []).map((item) => ({
+      label: item.name,
+      value: item.id,
+    }));
+  } catch {
+    // 忽略错误
+  }
+});
+
+// 通过 provide 传递给表单组件
+provide('thingModelOptions', thingModelOptions);
 
 const [FormDrawer, formDrawerApi] = useVbenDrawer({
   connectedComponent: Form,

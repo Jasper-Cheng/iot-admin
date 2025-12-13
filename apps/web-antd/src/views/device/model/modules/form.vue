@@ -2,7 +2,7 @@
 import type { DeviceModelApi } from '#/api/iot/device-model';
 import type { ThingModelApi } from '#/api/iot/thing-model';
 
-import { computed, nextTick, ref, watch } from 'vue';
+import { computed, inject, nextTick, ref, watch } from 'vue';
 
 import { useVbenDrawer } from '@vben/common-ui';
 
@@ -17,6 +17,9 @@ import ServicesEditor from './services-editor.vue';
 
 const emits = defineEmits(['success']);
 
+// 从父组件获取物模型选项
+const thingModelOptions = inject<ReturnType<typeof ref<Array<{ label: string; value: number }>>>>('thingModelOptions', ref([]));
+
 const formData = ref<DeviceModelApi.DeviceModel>();
 const thingModelData = ref<ThingModelApi.ThingModel | null>(null);
 const propertiesValue = ref<string>('');
@@ -26,10 +29,16 @@ const eventsValue = ref<string>('');
 const id = ref<number>();
 const thingModelId = ref<number | undefined>();
 
+const isInitializing = ref(false);
+
 const [Form, formApi] = useVbenForm({
-  schema: useFormSchema(),
+  schema: computed(() => useFormSchema(thingModelOptions.value)),
   showDefaultActions: false,
   handleValuesChange: async (values, changedFields) => {
+    // 在初始化过程中，不触发 watch
+    if (isInitializing.value) {
+      return;
+    }
     if (changedFields.includes('thingModelId')) {
       const newThingModelId = values.thingModelId as number | undefined;
       if (newThingModelId !== thingModelId.value) {
@@ -39,15 +48,20 @@ const [Form, formApi] = useVbenForm({
   },
 });
 
-// 监听物模型选择
+// 监听物模型选择（仅在用户手动选择时触发，编辑模式下不触发）
 watch(
   thingModelId,
-  async (newThingModelId) => {
+  async (newThingModelId, oldThingModelId) => {
+    // 在初始化过程中，不触发 watch（编辑模式下已在 onOpenChange 中加载）
+    if (isInitializing.value) {
+      return;
+    }
+    
     if (newThingModelId) {
       try {
         const thingModel = await getThingModel(newThingModelId);
         thingModelData.value = thingModel;
-        // 初始化新增的属性/服务/事件为空
+        // 重置属性/服务/事件为空（新增模式或用户切换物模型）
         propertiesValue.value = '';
         servicesValue.value = '[]';
         eventsValue.value = '[]';
@@ -144,12 +158,14 @@ const [Drawer, drawerApi] = useVbenDrawer({
 
   async onOpenChange(isOpen) {
     if (isOpen) {
+      isInitializing.value = true;
       const data = drawerApi.getData<DeviceModelApi.DeviceModel>();
       formApi.resetForm();
       thingModelData.value = null;
       propertiesValue.value = '';
       servicesValue.value = '[]';
       eventsValue.value = '[]';
+      thingModelId.value = undefined;
 
       if (data && data.id) {
         formData.value = data;
@@ -161,9 +177,9 @@ const [Drawer, drawerApi] = useVbenDrawer({
 
       await nextTick();
       if (data && data.id) {
-        formApi.setValues(data);
-        // 编辑时，如果有物模型ID，加载物模型数据
+        // 编辑时，如果有物模型ID，直接加载物模型数据（不通过 watch，避免重复请求）
         if (data.thingModelId) {
+          thingModelId.value = data.thingModelId;
           try {
             const thingModel = await getThingModel(data.thingModelId);
             thingModelData.value = thingModel;
@@ -209,7 +225,11 @@ const [Drawer, drawerApi] = useVbenDrawer({
             // 忽略错误
           }
         }
+        // 最后设置表单值，此时 thingModelId 已经设置，且 isInitializing 为 true，不会触发 watch
+        await formApi.setValues(data);
       }
+      await nextTick();
+      isInitializing.value = false;
     }
   },
 });
