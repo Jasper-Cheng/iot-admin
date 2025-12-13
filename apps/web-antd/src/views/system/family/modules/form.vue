@@ -8,7 +8,7 @@ import { useVbenDrawer } from '@vben/common-ui';
 import { Plus } from '@vben/icons';
 
 import { useVbenForm } from '#/adapter/form';
-import { createFamily, updateFamily, getFamilyMemberList, addFamilyMember, removeFamilyMember } from '#/api/iot/family';
+import { createFamily, updateFamily, getFamily, getFamilyMemberList, addFamilyMember, removeFamilyMember } from '#/api/iot/family';
 import { getDeviceList } from '#/api/iot/device';
 import { getUserList } from '#/api/iot/user';
 
@@ -201,6 +201,7 @@ async function initUserOptions() {
   await userLoader.loadMore();
   userOptions.value = userLoader.getOptions().map((item) => ({
     id: item.id,
+    value: item.id,
     label: `${item.id}_${item.label}`,
   }));
 }
@@ -213,6 +214,7 @@ async function initDeviceOptions() {
   await deviceLoader.loadMore();
   deviceOptions.value = deviceLoader.getOptions().map((item) => ({
     id: item.id,
+    value: item.id,
     label: `${item.id}_${item.label}`,
   }));
 }
@@ -225,6 +227,7 @@ function handleUserScroll(e: Event) {
     userLoader.loadMore().then(() => {
       userOptions.value = userLoader.getOptions().map((item) => ({
         id: item.id,
+        value: item.id,
         label: `${item.id}_${item.label}`,
       }));
     });
@@ -239,6 +242,7 @@ function handleDeviceScroll(e: Event) {
     deviceLoader.loadMore().then(() => {
       deviceOptions.value = deviceLoader.getOptions().map((item) => ({
         id: item.id,
+        value: item.id,
         label: `${item.id}_${item.label}`,
       }));
     });
@@ -247,7 +251,10 @@ function handleDeviceScroll(e: Event) {
 
 // 添加成员
 async function handleAddMember() {
-  if (!selectedUserId.value || !id.value) return;
+  if (!selectedUserId.value || !id.value) {
+    message.warning('请选择要添加的用户');
+    return;
+  }
   
   // 检查是否已存在
   if (members.value.some((m) => m.accountId === selectedUserId.value)) {
@@ -262,9 +269,19 @@ async function handleAddMember() {
     });
     message.success('添加成员成功');
     selectedUserId.value = undefined;
-    await loadMembers();
-  } catch (error) {
-    message.error('添加成员失败');
+    // 重新加载家庭数据以更新 memberIds 和 memberNames
+    if (id.value) {
+      const familyData = await getFamily(id.value);
+      formData.value = familyData;
+      await loadMembers();
+      // 重新加载设备列表，确保设备数据同步
+      loadDevices();
+    }
+    // 触发成功事件，刷新家庭列表
+    emits('success');
+  } catch (error: any) {
+    console.error('添加成员失败:', error);
+    message.error(error?.response?.data?.message || '添加成员失败');
   }
 }
 
@@ -279,9 +296,19 @@ async function handleRemoveMember(memberId: number) {
       try {
         await removeFamilyMember(id.value!, memberId);
         message.success('移除成员成功');
-        await loadMembers();
-      } catch (error) {
-        message.error('移除成员失败');
+        // 重新加载家庭数据以更新 memberIds 和 memberNames
+        if (id.value) {
+          const familyData = await getFamily(id.value);
+          formData.value = familyData;
+          await loadMembers();
+          // 重新加载设备列表，确保设备数据同步
+          loadDevices();
+        }
+        // 触发成功事件，刷新家庭列表
+        emits('success');
+      } catch (error: any) {
+        console.error('移除成员失败:', error);
+        message.error(error?.response?.data?.message || '移除成员失败');
       }
     },
   });
@@ -327,14 +354,17 @@ async function handleAddDevice() {
       await loadDevices();
       // 重新加载表单数据以更新deviceIds
       if (formData.value) {
-        const familyData = await import('#/api/iot/family').then((m) => m.getFamily(id.value!));
+        const familyData = await getFamily(id.value!);
         formData.value = familyData;
         // 重新加载设备列表
         await loadDevices();
       }
+      // 触发成功事件，刷新家庭列表
+      emits('success');
     }
-  } catch (error) {
-    message.error('添加设备失败');
+  } catch (error: any) {
+    console.error('添加设备失败:', error);
+    message.error(error?.response?.data?.message || '添加设备失败');
   }
 }
 
@@ -359,15 +389,17 @@ async function handleRemoveDevice(deviceId: number) {
         });
         
         message.success('移除设备成功');
-        await loadDevices();
-        // 重新加载表单数据以更新deviceIds
-        if (formData.value) {
-          const familyData = await import('#/api/iot/family').then((m) => m.getFamily(id.value!));
+        // 重新加载家庭数据以更新 deviceIds 和 deviceNames
+        if (id.value) {
+          const familyData = await getFamily(id.value);
           formData.value = familyData;
           await loadDevices();
         }
-      } catch (error) {
-        message.error('移除设备失败');
+        // 触发成功事件，刷新家庭列表
+        emits('success');
+      } catch (error: any) {
+        console.error('移除设备失败:', error);
+        message.error(error?.response?.data?.message || '移除设备失败');
       }
     },
   });
