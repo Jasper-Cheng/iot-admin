@@ -9,7 +9,7 @@ import { Plus } from '@vben/icons';
 
 import { useVbenForm } from '#/adapter/form';
 import { createFamily, updateFamily, getFamily, getFamilyMemberList, addFamilyMember, removeFamilyMember } from '#/api/iot/family';
-import { getDeviceList } from '#/api/iot/device';
+import { getDeviceList, getDevice } from '#/api/iot/device';
 import { getUserList } from '#/api/iot/user';
 
 import { useFormSchema } from '../data';
@@ -95,11 +95,59 @@ const userLoader = createScrollLoader(
   'id',
 );
 
-const deviceLoader = createScrollLoader(
-  async (params) => await getDeviceList(params),
-  'name',
-  'id',
-);
+// 加载家庭成员的设备
+let familyDeviceLoading = false;
+
+async function loadFamilyMemberDevices() {
+  if (!id.value || !formData.value?.memberIds || formData.value.memberIds.length === 0) {
+    return [];
+  }
+
+  if (familyDeviceLoading) return [];
+
+  familyDeviceLoading = true;
+  try {
+    const memberIds = formData.value.memberIds;
+    const pageSize = 10;
+    const allDevices: any[] = [];
+
+    // 为每个成员获取设备
+    for (const memberId of memberIds) {
+      let currentPage = 1;
+      let hasMore = true;
+
+      while (hasMore) {
+        const result = await getDeviceList({
+          accountId: memberId,
+          page: currentPage,
+          pageSize,
+        });
+
+        if (result.items && result.items.length > 0) {
+          allDevices.push(...result.items);
+        }
+
+        hasMore = result.items.length === pageSize && (currentPage * pageSize) < (result.total || 0);
+        currentPage += 1;
+      }
+    }
+
+    // 去重（按设备ID）
+    const deviceMap = new Map();
+    allDevices.forEach((device) => {
+      if (!deviceMap.has(device.id)) {
+        deviceMap.set(device.id, device);
+      }
+    });
+
+    return Array.from(deviceMap.values());
+  } catch (error) {
+    console.error('Failed to load family member devices:', error);
+    return [];
+  } finally {
+    familyDeviceLoading = false;
+  }
+}
 
 const [Form, formApi] = useVbenForm({
   schema: useFormSchema(),
@@ -208,14 +256,22 @@ async function initUserOptions() {
 
 // 初始化设备选项（延迟加载，只在需要时调用）
 async function initDeviceOptions() {
-  if (deviceOptions.value.length > 0) return; // 已经加载过
+  if (!id.value || !formData.value?.memberIds || formData.value.memberIds.length === 0) {
+    deviceOptions.value = [];
+    return;
+  }
+
+  // 加载家庭成员的设备
+  const allDevices = await loadFamilyMemberDevices();
   
-  deviceLoader.reset();
-  await deviceLoader.loadMore();
-  deviceOptions.value = deviceLoader.getOptions().map((item) => ({
-    id: item.id,
-    value: item.id,
-    label: `${item.id}_${item.label}`,
+  // 过滤掉已经添加到该家庭的设备
+  const familyDeviceIds = new Set(formData.value.deviceIds || []);
+  const availableDevices = allDevices.filter((device) => !familyDeviceIds.has(device.id));
+
+  deviceOptions.value = availableDevices.map((device) => ({
+    id: device.id,
+    value: device.id,
+    label: `${device.id}_${device.name || device.sn || `设备${device.id}`}`,
   }));
 }
 
@@ -235,18 +291,11 @@ function handleUserScroll(e: Event) {
 }
 
 // 处理设备下拉框滚动加载
-function handleDeviceScroll(e: Event) {
-  const target = e.target as HTMLElement;
-  const { scrollTop, scrollHeight, clientHeight } = target;
-  if (scrollHeight - scrollTop - clientHeight < 50) {
-    deviceLoader.loadMore().then(() => {
-      deviceOptions.value = deviceLoader.getOptions().map((item) => ({
-        id: item.id,
-        value: item.id,
-        label: `${item.id}_${item.label}`,
-      }));
-    });
-  }
+// 注意：由于设备选项是基于家庭成员设备一次性加载的，这里不需要滚动加载
+// 但如果设备很多，可以考虑实现分页加载
+function handleDeviceScroll(_e: Event) {
+  // 设备选项已经一次性加载完成，不需要滚动加载
+  // 如果需要支持大量设备的分页加载，可以在这里实现
 }
 
 // 添加成员
@@ -276,6 +325,8 @@ async function handleAddMember() {
       await loadMembers();
       // 重新加载设备列表，确保设备数据同步
       loadDevices();
+      // 重置设备选项，以便重新加载新成员的设备
+      deviceOptions.value = [];
     }
     // 触发成功事件，刷新家庭列表
     emits('success');
@@ -303,6 +354,8 @@ async function handleRemoveMember(memberId: number) {
           await loadMembers();
           // 重新加载设备列表，确保设备数据同步
           loadDevices();
+          // 重置设备选项，以便重新加载剩余成员的设备
+          deviceOptions.value = [];
         }
         // 触发成功事件，刷新家庭列表
         emits('success');
@@ -358,6 +411,8 @@ async function handleAddDevice() {
         formData.value = familyData;
         // 重新加载设备列表
         await loadDevices();
+        // 重置设备选项，以便重新加载可用设备（排除新添加的设备）
+        deviceOptions.value = [];
       }
       // 触发成功事件，刷新家庭列表
       emits('success');
@@ -378,8 +433,8 @@ async function handleRemoveDevice(deviceId: number) {
     onOk: async () => {
       try {
         const { updateDevice } = await import('#/api/iot/device');
-        const deviceResult = await getDeviceList({ pageSize: 1000 });
-        const device = deviceResult.items.find((d) => d.id === deviceId);
+        // 直接获取设备详情，而不是使用 pageSize: 1000
+        const device = await getDevice(deviceId);
         const currentFamilyIds = device?.familyIds || [];
         
         // 移除当前家庭ID
@@ -394,6 +449,8 @@ async function handleRemoveDevice(deviceId: number) {
           const familyData = await getFamily(id.value);
           formData.value = familyData;
           await loadDevices();
+          // 重置设备选项，以便重新加载可用设备（包含刚移除的设备）
+          deviceOptions.value = [];
         }
         // 触发成功事件，刷新家庭列表
         emits('success');

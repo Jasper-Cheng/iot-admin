@@ -68,8 +68,8 @@ function handleSelect(avatar: string) {
 
 .avatar-grid {
   display: grid;
-  grid-template-columns: repeat(8, 1fr);
-  gap: 8px;
+  grid-template-columns: repeat(10, 1fr);
+  gap: 6px;
   padding: 8px 0;
 }
 
@@ -104,10 +104,10 @@ function handleSelect(avatar: string) {
 
 .avatar-check {
   position: absolute;
-  top: 4px;
-  right: 4px;
-  width: 24px;
-  height: 24px;
+  top: 2px;
+  right: 2px;
+  width: 20px;
+  height: 20px;
   background: #1890ff;
   border-radius: 50%;
   display: flex;
@@ -118,8 +118,8 @@ function handleSelect(avatar: string) {
 }
 
 .check-icon {
-  width: 16px;
-  height: 16px;
+  width: 12px;
+  height: 12px;
   stroke-width: 3;
 }
 </style>
