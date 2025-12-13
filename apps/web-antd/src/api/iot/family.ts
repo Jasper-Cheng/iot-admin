@@ -9,8 +9,10 @@ export namespace FamilyApi {
     inviteCode?: string;
     memberCount?: number; // 扩展字段，用于显示
     memberIds?: number[]; // 成员ID列表
+    memberNames?: string[]; // 成员名称列表
     deviceCount?: number; // 扩展字段，用于显示
     deviceIds?: number[]; // 设备ID列表
+    deviceNames?: string[]; // 设备名称列表
     createdAt: string;
     updatedAt?: string;
   }

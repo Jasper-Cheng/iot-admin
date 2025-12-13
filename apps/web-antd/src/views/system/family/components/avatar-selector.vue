@@ -68,8 +68,8 @@ function handleSelect(avatar: string) {
 
 .avatar-grid {
   display: grid;
-  grid-template-columns: repeat(5, 1fr);
-  gap: 12px;
+  grid-template-columns: repeat(8, 1fr);
+  gap: 8px;
   padding: 8px 0;
 }
 
