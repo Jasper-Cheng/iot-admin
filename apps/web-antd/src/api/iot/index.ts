@@ -5,6 +5,7 @@ export * from './family';
 export * from './feedback';
 export * from './log';
 export * from './notice';
+export * from './points';
 export * from './thing-model';
 export * from './user';
 export * from './version';

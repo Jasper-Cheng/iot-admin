@@ -8,7 +8,6 @@ import { useVbenDrawer } from '@vben/common-ui';
 import { useVbenForm } from '#/adapter/form';
 import { updateDevice } from '#/api/iot/device';
 import { getDeviceModelList } from '#/api/iot/device-model';
-import { getFamilyList } from '#/api/iot/family';
 import { getUserList } from '#/api/iot/user';
 
 const emits = defineEmits(['success']);
@@ -43,16 +42,34 @@ function createScrollLoader(
       currentPage += 1;
       hasMore = allItems.length < total;
 
-      return allItems.map((item) => ({
-        label: item[labelField] || item.phone || item.name,
-        value: item[valueField],
-      }));
+      return allItems.map((item) => {
+        // 对于用户选项，使用特殊格式：用户名->手机号
+        if (labelField === 'nickname' && item.phone) {
+          return {
+            label: `${item.nickname || '未知'}->${item.phone}`,
+            value: item[valueField],
+          };
+        }
+        return {
+          label: item[labelField] || item.phone || item.name,
+          value: item[valueField],
+        };
+      });
     } catch (error) {
       console.error('Failed to load options:', error);
-      return allItems.map((item) => ({
-        label: item[labelField] || item.phone || item.name,
-        value: item[valueField],
-      }));
+      return allItems.map((item) => {
+        // 对于用户选项，使用特殊格式：用户名->手机号
+        if (labelField === 'nickname' && item.phone) {
+          return {
+            label: `${item.nickname || '未知'}->${item.phone}`,
+            value: item[valueField],
+          };
+        }
+        return {
+          label: item[labelField] || item.phone || item.name,
+          value: item[valueField],
+        };
+      });
     } finally {
       loading = false;
     }
@@ -66,10 +83,19 @@ function createScrollLoader(
   };
 
   const getOptions = () => {
-    return allItems.map((item) => ({
-      label: item[labelField] || item.phone || item.name,
-      value: item[valueField],
-    }));
+    return allItems.map((item) => {
+      // 对于用户选项，使用特殊格式：用户名->手机号
+      if (labelField === 'nickname' && item.phone) {
+        return {
+          label: `${item.nickname || '未知'}->${item.phone}`,
+          value: item[valueField],
+        };
+      }
+      return {
+        label: item[labelField] || item.phone || item.name,
+        value: item[valueField],
+      };
+    });
   };
 
   return { loadMore, reset, getOptions };
@@ -88,32 +114,22 @@ const userLoader = createScrollLoader(
   'id',
 );
 
-const familyLoader = createScrollLoader(
-  async (params) => await getFamilyList(params),
-  'name',
-  'id',
-);
-
 // 初始化选项
 const modelOptions = ref<Array<{ label: string; value: number }>>([]);
 const accountOptions = ref<Array<{ label: string; value: number }>>([]);
-const familyOptions = ref<Array<{ label: string; value: number }>>([]);
 
 // 加载初始数据
 async function loadInitialOptions() {
   modelLoader.reset();
   userLoader.reset();
-  familyLoader.reset();
 
   await Promise.all([
     modelLoader.loadMore(),
     userLoader.loadMore(),
-    familyLoader.loadMore(),
   ]);
 
   modelOptions.value = modelLoader.getOptions();
   accountOptions.value = userLoader.getOptions();
-  familyOptions.value = familyLoader.getOptions();
 }
 
 // 处理滚动加载
@@ -137,15 +153,6 @@ function handleUserScroll(e: Event) {
   }
 }
 
-function handleFamilyScroll(e: Event) {
-  const target = e.target as HTMLElement;
-  const { scrollTop, scrollHeight, clientHeight } = target;
-  if (scrollHeight - scrollTop - clientHeight < 50) {
-    familyLoader.loadMore().then(() => {
-      familyOptions.value = familyLoader.getOptions();
-    });
-  }
-}
 
 const [Form, formApi] = useVbenForm({
   schema: [
@@ -188,24 +195,6 @@ const [Form, formApi] = useVbenForm({
         },
       },
     },
-    {
-      component: 'Select',
-      fieldName: 'familyIds',
-      label: '所属家庭',
-      componentProps: {
-        placeholder: '请选择所属家庭',
-        allowClear: true,
-        mode: 'multiple',
-        showSearch: true,
-        options: familyOptions,
-        onPopupScroll: handleFamilyScroll,
-        style: { width: '100%' },
-        dropdownStyle: { minWidth: '300px' },
-        filterOption: (input: string, option: any) => {
-          return option.label.toLowerCase().indexOf(input.toLowerCase()) >= 0;
-        },
-      },
-    },
   ],
   showDefaultActions: false,
 });
@@ -225,7 +214,6 @@ const [Drawer, drawerApi] = useVbenDrawer({
         modelId: values.modelId,
         // 如果 accountId 为空（清空选择），传递 null；否则传递实际值
         accountId: values.accountId === undefined || values.accountId === null ? null : values.accountId,
-        familyIds: Array.isArray(values.familyIds) ? values.familyIds : undefined,
       };
       await updateDevice(id.value!, payload);
       emits('success');
@@ -250,7 +238,6 @@ const [Drawer, drawerApi] = useVbenDrawer({
           name: data.name,
           modelId: data.modelId,
           accountId: data.accountId,
-          familyIds: data.familyIds || [],
         });
       } else {
         formData.value = undefined;

@@ -40,6 +40,15 @@ const routes: RouteRecordRaw[] = [
         },
       },
       {
+        name: 'PointsManage',
+        path: '/system/points',
+        component: () => import('#/views/system/points/index.vue'),
+        meta: {
+          icon: 'lucide:coins',
+          title: $t('page.system.points'),
+        },
+      },
+      {
         name: 'FeedbackList',
         path: '/system/feedback',
         component: () => import('#/views/feedback/list/index.vue'),

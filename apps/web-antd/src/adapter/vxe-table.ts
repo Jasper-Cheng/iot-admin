@@ -90,6 +90,9 @@ setupVbenVxeTable({
             edit: '编辑',
             delete: '删除',
             reply: '回复',
+            detail: '积分记录',
+            checkin: '签到记录',
+            adjust: '奖励/扣除',
           };
 
           const isDelete = action === 'delete';

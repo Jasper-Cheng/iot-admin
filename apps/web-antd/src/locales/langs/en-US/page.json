@@ -34,7 +34,8 @@
     "title": "System",
     "family": "Family Management",
     "notice": "System Notice",
-    "version": "Version Management"
+    "version": "Version Management",
+    "points": "Points Management"
   },
   "about": "About"
 }
