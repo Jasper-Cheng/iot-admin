@@ -9,7 +9,7 @@ export namespace DeviceApi {
     thingModelId?: number;
     name: string;
     sn: string;
-    status: 'unconfigured' | 'configured' | 'unbound' | 'bound' | 'offline' | 'online' | 'fault';
+    status: 'unconfigured' | 'configured' | 'unbound' | 'bound' | 'offline' | 'online' | 'fault' | 'fatal';
     createdAt: string;
     // 扩展字段（用于显示）
     accountName?: string;
@@ -30,6 +30,26 @@ export namespace DeviceApi {
   export interface DeviceListResult {
     items: Device[];
     total: number;
+  }
+
+  export interface CreateDeviceParams {
+    name: string;
+    sn: string;
+    modelId: number;
+    accountId?: number | null;
+    status?: 'unbound' | 'bound' | 'offline' | 'online' | 'fatal';
+  }
+
+  export interface CreateDeviceResult {
+    id: number;
+    name: string;
+    sn: string;
+    modelId: number;
+    modelName?: string | null;
+    accountId?: number | null;
+    accountName?: string | null;
+    status: string;
+    createdAt: string;
   }
 
   export interface NetworkInfo {
@@ -66,6 +86,11 @@ export function getDeviceList(params: DeviceApi.DeviceListParams) {
   return requestClient.get<DeviceApi.DeviceListResult>('/device/list', {
     params,
   });
+}
+
+/** 创建设备（设备入库） */
+export function createDevice(data: DeviceApi.CreateDeviceParams) {
+  return requestClient.post<DeviceApi.CreateDeviceResult>('/device', data);
 }
 
 /** 获取设备详情 */

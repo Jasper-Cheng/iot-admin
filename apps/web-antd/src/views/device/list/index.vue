@@ -6,14 +6,16 @@ import { computed, onMounted, watch } from 'vue';
 import { useRoute } from 'vue-router';
 
 import { Page, useVbenDrawer } from '@vben/common-ui';
+import { Plus } from '@vben/icons';
 
-import { message, Modal } from 'ant-design-vue';
+import { Button, message, Modal } from 'ant-design-vue';
 
 import { useVbenVxeGrid } from '#/adapter/vxe-table';
 import { deleteDevice, getDeviceList } from '#/api/iot/device';
 
 import { useColumns, useGridFormSchema } from './data';
 import Form from './modules/form.vue'; // eslint-disable-line
+import CreateForm from './modules/create-form.vue'; // eslint-disable-line
 
 // 定义操作点击参数类型
 interface OnActionClickParams<T> {
@@ -25,6 +27,11 @@ const route = useRoute();
 
 const [FormDrawer, formDrawerApi] = useVbenDrawer({
   connectedComponent: Form,
+  destroyOnClose: true,
+});
+
+const [CreateFormDrawer, createFormDrawerApi] = useVbenDrawer({
+  connectedComponent: CreateForm,
   destroyOnClose: true,
 });
 
@@ -126,6 +133,10 @@ function onRefresh() {
   gridApi.query();
 }
 
+function onCreate() {
+  createFormDrawerApi.open();
+}
+
 // 监听路由查询参数变化，更新表单值并触发查询
 watch(
   () => route.query,
@@ -163,7 +174,16 @@ onMounted(async () => {
 
 <template>
   <Page auto-content-height title="设备列表" description="查看和管理所有设备">
+    <template #extra>
+      <Button type="primary" @click="onCreate">
+        <template #icon>
+          <Plus />
+        </template>
+        设备入库
+      </Button>
+    </template>
     <Grid table-title="设备列表" />
     <FormDrawer @success="onRefresh" />
+    <CreateFormDrawer @success="onRefresh" />
   </Page>
 </template>

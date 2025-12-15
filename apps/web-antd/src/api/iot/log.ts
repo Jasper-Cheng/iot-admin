@@ -23,6 +23,7 @@ export namespace LogApi {
     id: number;
     accountId: number;
     accountName?: string; // 扩展字段，用于显示
+    role?: 'user' | 'admin'; // 角色，用于显示
     operationType: OperationType;
     description: string;
     extra?: Record<string, any>;
@@ -34,6 +35,7 @@ export namespace LogApi {
     pageSize?: number;
     accountId?: number;
     operationType?: OperationType;
+    role?: 'user' | 'admin';
     startTime?: string;
     endTime?: string;
   }
