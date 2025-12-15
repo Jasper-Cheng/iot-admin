@@ -63,15 +63,6 @@ export function useFormSchema(thingModelOptions?: Array<{ label: string; value: 
         placeholder: '请输入制造商',
       },
     },
-    {
-      component: 'Textarea',
-      fieldName: 'description',
-      label: '描述',
-      componentProps: {
-        placeholder: '请输入描述',
-        rows: 3,
-      },
-    },
   ];
 }
 
