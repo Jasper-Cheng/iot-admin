@@ -61,8 +61,7 @@ export function useFormSchema(): VbenFormSchema[] {
       componentProps: {
         options: [
           { label: 'Web', value: 'web' },
-          { label: 'Android', value: 'android' },
-          { label: 'iOS', value: 'ios' },
+          { label: 'App', value: 'app' },
         ],
       },
       defaultValue: ['web'],
@@ -212,7 +211,7 @@ export function useColumns<T = NoticeApi.Notice>(): VxeTableGridOptions['columns
             'div',
             { class: 'flex gap-1' },
             row.platforms.map((p: string) =>
-              h(Tag, { color: p === 'web' ? 'blue' : p === 'android' ? 'green' : 'cyan' }, () => p.toUpperCase()),
+              h(Tag, { color: p === 'web' ? 'blue' : 'green' }, () => p === 'web' ? 'Web' : 'App'),
             ),
           );
         },
