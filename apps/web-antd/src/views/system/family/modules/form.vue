@@ -3,13 +3,13 @@ import type { FamilyApi } from '#/api/iot/family';
 
 import { computed, nextTick, ref } from 'vue';
 
-import { Button, message, Modal, Select, Table } from 'ant-design-vue';
+import { Button, Input, message, Modal, Select, Table } from 'ant-design-vue';
 import { useVbenDrawer } from '@vben/common-ui';
 import { Plus } from '@vben/icons';
 
 import { useVbenForm } from '#/adapter/form';
-import { createFamily, updateFamily, getFamily, getFamilyMemberList, addFamilyMember, removeFamilyMember } from '#/api/iot/family';
-import { getDeviceList, getDevice } from '#/api/iot/device';
+import { createFamily, updateFamily, getFamily, getFamilyMemberList, addFamilyMember, removeFamilyMember, addFamilyDevice, removeFamilyDevice, updateFamilyMember } from '#/api/iot/family';
+import { getDeviceList } from '#/api/iot/device';
 import { getUserList } from '#/api/iot/user';
 
 import { useFormSchema } from '../data';
@@ -17,13 +17,15 @@ import { useFormSchema } from '../data';
 const emits = defineEmits(['success']);
 
 const formData = ref<FamilyApi.Family>();
-const members = ref<Array<{ id: number; accountId: number; accountName: string }>>([]);
+const members = ref<Array<{ id: number; accountId: number; accountName: string; nickname?: string; originalNickname?: string }>>([]);
 const devices = ref<Array<{ id: number; name: string }>>([]);
 const userOptions = ref<Array<{ id: number; label: string }>>([]);
 const deviceOptions = ref<Array<{ id: number; label: string }>>([]);
 const selectedUserId = ref<number | undefined>();
 const selectedDeviceId = ref<number | undefined>();
 const loadingDevices = ref(false);
+const editingNicknameId = ref<number | null>(null); // 正在编辑昵称的成员ID
+const editingNicknameValue = ref<string>(''); // 编辑中的昵称值
 
 // 创建支持滚动加载的选项加载器
 function createScrollLoader(
@@ -53,18 +55,38 @@ function createScrollLoader(
       currentPage += 1;
       hasMore = allItems.length < total;
 
-      return allItems.map((item) => ({
-        label: item[labelField] || item.phone || item.name,
-        value: item[valueField],
-        id: item[valueField],
-      }));
+      return allItems.map((item) => {
+        // 对于用户选项，使用特殊格式：用户名_手机号
+        if (labelField === 'nickname' && item.phone) {
+          return {
+            label: `${item.nickname || '未知'}_${item.phone}`,
+            value: item[valueField],
+            id: item[valueField],
+          };
+        }
+        return {
+          label: item[labelField] || item.phone || item.name,
+          value: item[valueField],
+          id: item[valueField],
+        };
+      });
     } catch (error) {
       console.error('Failed to load options:', error);
-      return allItems.map((item) => ({
-        label: item[labelField] || item.phone || item.name,
-        value: item[valueField],
-        id: item[valueField],
-      }));
+      return allItems.map((item) => {
+        // 对于用户选项，使用特殊格式：用户名_手机号
+        if (labelField === 'nickname' && item.phone) {
+          return {
+            label: `${item.nickname || '未知'}_${item.phone}`,
+            value: item[valueField],
+            id: item[valueField],
+          };
+        }
+        return {
+          label: item[labelField] || item.phone || item.name,
+          value: item[valueField],
+          id: item[valueField],
+        };
+      });
     } finally {
       loading = false;
     }
@@ -78,14 +100,28 @@ function createScrollLoader(
   };
 
   const getOptions = () => {
-    return allItems.map((item) => ({
-      label: item[labelField] || item.phone || item.name,
-      value: item[valueField],
-      id: item[valueField],
-    }));
+    return allItems.map((item) => {
+      // 对于用户选项，使用特殊格式：用户名_手机号
+      if (labelField === 'nickname' && item.phone) {
+        return {
+          label: `${item.nickname || '未知'}_${item.phone}`,
+          value: item[valueField],
+          id: item[valueField],
+        };
+      }
+      return {
+        label: item[labelField] || item.phone || item.name,
+        value: item[valueField],
+        id: item[valueField],
+      };
+    });
   };
 
-  return { loadMore, reset, getOptions };
+  const getItemById = (id: number) => {
+    return allItems.find((item) => item[valueField] === id);
+  };
+
+  return { loadMore, reset, getOptions, getItemById };
 }
 
 // 创建用户和设备滚动加载器
@@ -198,10 +234,14 @@ async function loadMembers() {
     
     members.value = memberIds.map((accountId, index) => {
       const member = finalMemberMap.get(accountId);
+      // 确保昵称值正确显示，处理 null、undefined 和空字符串
+      const nickname = member?.nickname ? String(member.nickname) : '';
       return {
         id: member?.id || 0, // 使用家庭成员关系ID
         accountId: accountId,
         accountName: memberNames[index] || member?.accountName || `用户${accountId}`,
+        nickname: nickname,
+        originalNickname: nickname, // 保存原始昵称，用于比较是否有变化
       };
     });
   } catch (error) {
@@ -211,6 +251,8 @@ async function loadMembers() {
       id: 0,
       accountId: accountId,
       accountName: memberNames[index] || `用户${accountId}`,
+      nickname: undefined,
+      originalNickname: undefined,
     }));
   }
 }
@@ -250,7 +292,7 @@ async function initUserOptions() {
   userOptions.value = userLoader.getOptions().map((item) => ({
     id: item.id,
     value: item.id,
-    label: `${item.id}_${item.label}`,
+    label: item.label, // 已经在 getOptions 中格式化为 用户名_手机号
   }));
 }
 
@@ -284,7 +326,7 @@ function handleUserScroll(e: Event) {
       userOptions.value = userLoader.getOptions().map((item) => ({
         id: item.id,
         value: item.id,
-        label: `${item.id}_${item.label}`,
+        label: item.label, // 已经在 getOptions 中格式化为 用户名_手机号
       }));
     });
   }
@@ -312,9 +354,39 @@ async function handleAddMember() {
   }
 
   try {
+    // 获取用户信息，使用用户的nickname作为默认昵称
+    let defaultNickname: string | undefined;
+    const user = userLoader.getItemById(selectedUserId.value);
+    if (user) {
+      defaultNickname = user.nickname || undefined;
+    } else {
+      // 如果用户信息未加载，尝试从API搜索获取
+      try {
+        // 通过分页搜索找到用户（最多搜索前100个用户）
+        let foundUser = null;
+        let currentPage = 1;
+        const pageSize = 20;
+        while (currentPage <= 5 && !foundUser) {
+          const userResult = await getUserList({ page: currentPage, pageSize });
+          foundUser = userResult.items.find((u) => u.id === selectedUserId.value);
+          if (foundUser || userResult.items.length < pageSize) {
+            break;
+          }
+          currentPage += 1;
+        }
+        if (foundUser) {
+          defaultNickname = foundUser.nickname || undefined;
+        }
+      } catch (error) {
+        // 如果获取失败，使用undefined（后端会处理）
+        console.warn('获取用户信息失败，将不设置默认昵称:', error);
+      }
+    }
+
     await addFamilyMember({
       familyId: id.value,
       accountId: selectedUserId.value,
+      nickname: defaultNickname,
     });
     message.success('添加成员成功');
     selectedUserId.value = undefined;
@@ -334,6 +406,52 @@ async function handleAddMember() {
     console.error('添加成员失败:', error);
     message.error(error?.response?.data?.message || '添加成员失败');
   }
+}
+
+// 开始编辑昵称
+function handleStartEditNickname(memberId: number, currentNickname?: string) {
+  editingNicknameId.value = memberId;
+  editingNicknameValue.value = currentNickname || '';
+}
+
+// 保存昵称
+async function handleSaveNickname(memberId: number) {
+  if (!id.value) return;
+
+  const member = members.value.find((m) => m.id === memberId);
+  if (!member) return;
+
+  // 处理昵称：空字符串转为 null，否则使用 trim 后的值
+  const trimmedNickname = editingNicknameValue.value.trim();
+  const newNickname: string | null = trimmedNickname === '' ? null : trimmedNickname;
+  
+  try {
+    await updateFamilyMember(id.value, memberId, {
+      nickname: newNickname,
+    });
+    
+    // 更新本地数据
+    member.nickname = newNickname || undefined;
+    member.originalNickname = newNickname || undefined;
+    
+    // 清除编辑状态
+    editingNicknameId.value = null;
+    editingNicknameValue.value = '';
+    
+    message.success('昵称更新成功');
+    // 触发成功事件，刷新家庭列表
+    emits('success');
+  } catch (error: any) {
+    console.error('更新昵称失败:', error);
+    const errorMsg = error?.response?.data?.detail || error?.response?.data?.message || '更新昵称失败';
+    message.error(errorMsg);
+  }
+}
+
+// 取消编辑昵称
+function handleCancelEditNickname() {
+  editingNicknameId.value = null;
+  editingNicknameValue.value = '';
 }
 
 // 删除成员
@@ -378,48 +496,26 @@ async function handleAddDevice() {
   }
 
   try {
-    // 更新设备的家庭关联
-    const { updateDevice } = await import('#/api/iot/device');
-    const currentDevice = deviceOptions.value.find((d: { id: number }) => d.id === selectedDeviceId.value);
-    if (currentDevice) {
-      // 获取设备当前的家庭列表（需要加载所有设备）
-      let device: any = null;
-      let currentPage = 1;
-      const pageSize = 10;
-      let hasMore = true;
-      
-      while (hasMore && !device) {
-        const deviceResult = await getDeviceList({ page: currentPage, pageSize });
-        device = deviceResult.items.find((d) => d.id === selectedDeviceId.value);
-        hasMore = deviceResult.items.length === pageSize && deviceResult.total > currentPage * pageSize;
-        currentPage += 1;
-      }
-      const currentFamilyIds = device?.familyIds || [];
-      
-      // 添加当前家庭ID
-      const newFamilyIds = [...currentFamilyIds, id.value];
-      await updateDevice(selectedDeviceId.value, {
-        familyIds: newFamilyIds,
-      });
-      
-      message.success('添加设备成功');
-      selectedDeviceId.value = undefined;
+    await addFamilyDevice(id.value, selectedDeviceId.value);
+    
+    message.success('添加设备成功');
+    selectedDeviceId.value = undefined;
+    
+    // 重新加载家庭数据以更新 deviceIds 和 deviceNames
+    if (id.value) {
+      const familyData = await getFamily(id.value);
+      formData.value = familyData;
+      // 重新加载设备列表
       await loadDevices();
-      // 重新加载表单数据以更新deviceIds
-      if (formData.value) {
-        const familyData = await getFamily(id.value!);
-        formData.value = familyData;
-        // 重新加载设备列表
-        await loadDevices();
-        // 重置设备选项，以便重新加载可用设备（排除新添加的设备）
-        deviceOptions.value = [];
-      }
-      // 触发成功事件，刷新家庭列表
-      emits('success');
+      // 重置设备选项，以便重新加载可用设备（排除新添加的设备）
+      deviceOptions.value = [];
     }
+    // 触发成功事件，刷新家庭列表
+    emits('success');
   } catch (error: any) {
     console.error('添加设备失败:', error);
-    message.error(error?.response?.data?.message || '添加设备失败');
+    const errorMsg = error?.response?.data?.detail || error?.response?.data?.message || '添加设备失败';
+    message.error(errorMsg);
   }
 }
 
@@ -432,16 +528,7 @@ async function handleRemoveDevice(deviceId: number) {
     content: '确定要从家庭中移除该设备吗？',
     onOk: async () => {
       try {
-        const { updateDevice } = await import('#/api/iot/device');
-        // 直接获取设备详情，而不是使用 pageSize: 1000
-        const device = await getDevice(deviceId);
-        const currentFamilyIds = device?.familyIds || [];
-        
-        // 移除当前家庭ID
-        const newFamilyIds = currentFamilyIds.filter((fid) => fid !== id.value);
-        await updateDevice(deviceId, {
-          familyIds: newFamilyIds,
-        });
+        await removeFamilyDevice(id.value!, deviceId);
         
         message.success('移除设备成功');
         // 重新加载家庭数据以更新 deviceIds 和 deviceNames
@@ -456,7 +543,8 @@ async function handleRemoveDevice(deviceId: number) {
         emits('success');
       } catch (error: any) {
         console.error('移除设备失败:', error);
-        message.error(error?.response?.data?.message || '移除设备失败');
+        const errorMsg = error?.response?.data?.detail || error?.response?.data?.message || '移除设备失败';
+        message.error(errorMsg);
       }
     },
   });
@@ -476,6 +564,7 @@ const [Drawer, drawerApi] = useVbenDrawer({
       await (id.value
         ? updateFamily(id.value, payload as FamilyApi.UpdateFamilyParams)
         : createFamily(payload as FamilyApi.CreateFamilyParams));
+
       emits('success');
       drawerApi.close();
     } catch {
@@ -568,6 +657,7 @@ const availableDevices = computed(() => {
           :columns="[
             { title: '成员ID', dataIndex: 'accountId', key: 'accountId', width: 100 },
             { title: '成员名称', dataIndex: 'accountName', key: 'accountName' },
+            { title: '家庭中的昵称', dataIndex: 'nickname', key: 'nickname' },
             {
               title: '操作',
               key: 'action',
@@ -581,6 +671,42 @@ const availableDevices = computed(() => {
           bordered
         >
           <template #bodyCell="{ column, record }">
+            <template v-if="column.key === 'nickname'">
+              <div v-if="editingNicknameId === record.id" class="flex items-center gap-1">
+                <Input
+                  v-model:value="editingNicknameValue"
+                  size="small"
+                  placeholder="请输入家庭中的昵称"
+                  style="width: 150px"
+                  @pressEnter="handleSaveNickname(record.id)"
+                />
+                <Button
+                  type="link"
+                  size="small"
+                  @click="handleSaveNickname(record.id)"
+                >
+                  保存
+                </Button>
+                <Button
+                  type="link"
+                  size="small"
+                  @click="handleCancelEditNickname"
+                >
+                  取消
+                </Button>
+              </div>
+              <div v-else class="flex items-center gap-1">
+                <span v-if="record.nickname" class="text-gray-700">{{ record.nickname }}</span>
+                <span v-else class="text-gray-400">-</span>
+                <Button
+                  type="link"
+                  size="small"
+                  @click="handleStartEditNickname(record.id, record.nickname)"
+                >
+                  修改
+                </Button>
+              </div>
+            </template>
             <template v-if="column.key === 'action'">
               <Button
                 type="link"

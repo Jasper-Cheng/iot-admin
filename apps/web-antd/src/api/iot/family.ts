@@ -69,6 +69,10 @@ export namespace FamilyApi {
     accountId: number;
     nickname?: string; // 在家庭中的昵称（可选）
   }
+
+  export interface UpdateFamilyMemberParams {
+    nickname: string | null; // 在家庭中的昵称，可以是字符串或 null（清空昵称）
+  }
 }
 
 /** 获取家庭列表 */
@@ -122,5 +126,24 @@ export function addFamilyMember(data: FamilyApi.AddFamilyMemberParams) {
 /** 移除家庭成员 */
 export function removeFamilyMember(familyId: number, memberId: number) {
   return requestClient.delete(`/family/${familyId}/members/${memberId}`);
+}
+
+/** 更新家庭成员昵称 */
+export function updateFamilyMember(
+  familyId: number,
+  memberId: number,
+  data: FamilyApi.UpdateFamilyMemberParams,
+) {
+  return requestClient.put(`/family/${familyId}/members/${memberId}`, data);
+}
+
+/** 添加设备到家庭 */
+export function addFamilyDevice(familyId: number, deviceId: number) {
+  return requestClient.post(`/family/${familyId}/devices/${deviceId}`);
+}
+
+/** 删除家庭设备关联 */
+export function removeFamilyDevice(familyId: number, deviceId: number) {
+  return requestClient.delete(`/family/${familyId}/devices/${deviceId}`);
 }
 
