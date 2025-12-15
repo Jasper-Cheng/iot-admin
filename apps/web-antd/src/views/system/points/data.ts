@@ -63,6 +63,11 @@ export function useColumns<T = PointsApi.PointsRecord>(
       },
     },
     {
+      field: 'accountPhone',
+      title: '手机号',
+      width: 130,
+    },
+    {
       field: 'balance',
       title: '积分余额',
       width: 120,
@@ -109,7 +114,7 @@ export function useColumns<T = PointsApi.PointsRecord>(
       field: 'operation',
       fixed: 'right',
       title: '操作',
-      width: 220,
+      minWidth: 120,
     },
   ];
 }

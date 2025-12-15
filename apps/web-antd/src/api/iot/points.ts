@@ -35,10 +35,6 @@ export namespace PointsApi {
   }
 
   export interface PointsDetailResult {
-    accountId: number;
-    accountName?: string | null;
-    accountPhone: string;
-    currentBalance: number;
     items: Array<{
       id: number;
       points: number;
@@ -73,6 +69,33 @@ export namespace PointsApi {
     extra?: Record<string, any>;
     createdAt: string;
   }
+
+  export interface CheckInRecord {
+    id: number;
+    checkInDate?: string | null;
+    checkInTime?: string | null;
+    pointsEarned: number;
+    continuousDays: number;
+    checkInType: 'normal' | 'bonus' | 'makeup';
+    extra?: Record<string, any> | null;
+    createdAt?: string | null;
+  }
+
+  export interface CheckInListParams {
+    accountId: number;
+    page?: number;
+    pageSize?: number;
+  }
+
+  export interface CheckInListResult {
+    accountId: number;
+    accountName?: string | null;
+    accountPhone: string;
+    items: CheckInRecord[];
+    total: number;
+    page: number;
+    pageSize: number;
+  }
 }
 
 /** 获取用户积分记录列表 */
@@ -103,6 +126,19 @@ export function adjustPoints(
   return requestClient.post<PointsApi.PointsAdjustResult>(
     `/points/${accountId}/adjust`,
     data,
+  );
+}
+
+/** 获取用户签到记录 */
+export function getCheckInList(
+  accountId: number,
+  params?: Omit<PointsApi.CheckInListParams, 'accountId'>,
+) {
+  return requestClient.get<PointsApi.CheckInListResult>(
+    `/points/${accountId}/check-in`,
+    {
+      params,
+    },
   );
 }
 

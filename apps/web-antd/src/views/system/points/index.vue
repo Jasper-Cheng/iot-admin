@@ -83,15 +83,29 @@ function onActionClick(e: OnActionClickParams<PointsApi.PointsRecord>) {
 }
 
 function onViewDetail(row: PointsApi.PointsRecord) {
-  detailDrawerApi.setData({ accountId: row.accountId }).open();
+  detailDrawerApi.setData({
+    accountId: row.accountId,
+    accountName: row.accountName ?? null,
+    accountPhone: row.accountPhone ?? '',
+    currentBalance: row.balance ?? 0,
+  }).open();
 }
 
 function onViewCheckin(row: PointsApi.PointsRecord) {
-  checkinDrawerApi.setData({ accountId: row.accountId }).open();
+  checkinDrawerApi.setData({
+    accountId: row.accountId,
+    accountName: row.accountName ?? null,
+    accountPhone: row.accountPhone ?? '',
+  }).open();
 }
 
 function onAdjust(row: PointsApi.PointsRecord) {
-  adjustDrawerApi.setData({ accountId: row.accountId }).open();
+  adjustDrawerApi.setData({
+    accountId: row.accountId,
+    accountName: row.accountName ?? null,
+    accountPhone: row.accountPhone ?? '',
+    currentBalance: row.balance ?? 0,
+  }).open();
 }
 
 function onRefresh() {

@@ -6,7 +6,7 @@ import { useVbenDrawer } from '@vben/common-ui';
 import { useVbenForm } from '#/adapter/form';
 import type { VbenFormSchema } from '#/adapter/form';
 
-import { adjustPoints, getPointsDetail } from '#/api/iot/points';
+import { adjustPoints } from '#/api/iot/points';
 
 const emits = defineEmits(['success']);
 
@@ -14,8 +14,8 @@ const accountId = ref<number>();
 const userInfo = ref<{
   accountId: number;
   accountName?: string | null;
-  accountPhone: string;
-  currentBalance: number;
+  accountPhone?: string;
+  currentBalance?: number;
 }>();
 
 const [Form, formApi] = useVbenForm({
@@ -68,10 +68,21 @@ const [Drawer, drawerApi] = useVbenDrawer({
 
   async onOpenChange(isOpen) {
     if (isOpen) {
-      const data = drawerApi.getData<{ accountId: number }>();
+      const data = drawerApi.getData<{
+        accountId: number;
+        accountName?: string | null;
+        accountPhone?: string;
+        currentBalance?: number;
+      }>();
       if (data?.accountId) {
         accountId.value = data.accountId;
-        await loadUserInfo();
+        // 直接使用传递过来的用户信息
+        userInfo.value = {
+          accountId: data.accountId,
+          accountName: data.accountName ?? null,
+          accountPhone: data.accountPhone ?? '',
+          currentBalance: data.currentBalance ?? 0,
+        };
         formApi.resetForm();
         formApi.setValues({
           points: undefined,
@@ -79,6 +90,16 @@ const [Drawer, drawerApi] = useVbenDrawer({
           description: '',
           extra: '',
         });
+      } else {
+        // 即使没有 accountId，也尝试设置 userInfo
+        if (data) {
+          userInfo.value = {
+            accountId: data.accountId ?? 0,
+            accountName: data.accountName ?? null,
+            accountPhone: data.accountPhone ?? '',
+            currentBalance: data.currentBalance ?? 0,
+          };
+        }
       }
     } else {
       accountId.value = undefined;
@@ -132,20 +153,6 @@ function useFormSchema(): VbenFormSchema[] {
   ];
 }
 
-async function loadUserInfo() {
-  if (!accountId.value) return;
-  try {
-    const result = await getPointsDetail(accountId.value, { page: 1, pageSize: 1 });
-    userInfo.value = {
-      accountId: result.accountId,
-      accountName: result.accountName,
-      accountPhone: result.accountPhone,
-      currentBalance: result.currentBalance,
-    };
-  } catch (error: any) {
-    message.error(error?.response?.data?.detail || '加载用户信息失败');
-  }
-}
 
 const pointsHint = computed(() => {
   if (!userInfo.value) return '';
@@ -156,23 +163,23 @@ const pointsHint = computed(() => {
 
 <template>
   <Drawer title="奖励/扣除积分" class="w-[600px]">
-    <div v-if="userInfo" class="mb-4 space-y-2 rounded-lg bg-gray-50 p-4">
+    <div v-if="userInfo" class="mb-4 space-y-2 p-4">
       <div class="flex items-center gap-4">
         <div>
           <span class="text-gray-500">用户ID：</span>
-          <span class="font-medium">{{ userInfo.accountId }}</span>
+          <span class="font-medium">{{ userInfo?.accountId ?? accountId ?? '-' }}</span>
         </div>
         <div>
           <span class="text-gray-500">用户名称：</span>
-          <span class="font-medium">{{ userInfo.accountName || '未知' }}</span>
+          <span class="font-medium">{{ userInfo?.accountName ?? '未知' }}</span>
         </div>
         <div>
           <span class="text-gray-500">手机号：</span>
-          <span class="font-medium">{{ userInfo.accountPhone }}</span>
+          <span class="font-medium">{{ userInfo?.accountPhone ?? '-' }}</span>
         </div>
         <div>
           <span class="text-gray-500">当前余额：</span>
-          <span class="text-lg font-bold text-blue-600">{{ userInfo.currentBalance }}</span>
+          <span class="text-lg font-bold text-blue-600">{{ userInfo?.currentBalance ?? '-' }}</span>
         </div>
       </div>
     </div>

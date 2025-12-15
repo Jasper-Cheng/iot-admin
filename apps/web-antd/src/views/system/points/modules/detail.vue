@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import { h } from 'vue';
+import { computed, h, nextTick, ref } from 'vue';
 
 import { message } from 'ant-design-vue';
 import { useVbenDrawer } from '@vben/common-ui';
@@ -17,22 +17,53 @@ const accountId = ref<number>();
 const userInfo = ref<{
   accountId: number;
   accountName?: string | null;
-  accountPhone: string;
-  currentBalance: number;
-}>();
+  accountPhone?: string;
+  currentBalance?: number;
+} | null>(null);
+
+// 使用 computed 确保响应式更新
+const displayAccountId = computed(() => userInfo.value?.accountId ?? '-');
+const displayAccountName = computed(() => userInfo.value?.accountName || '未知');
+const displayAccountPhone = computed(() => userInfo.value?.accountPhone || '-');
+const displayCurrentBalance = computed(() => userInfo.value?.currentBalance ?? '-');
 
 const [Drawer, drawerApi] = useVbenDrawer({
+  footer: false, // 隐藏默认的取消和确认按钮
   async onOpenChange(isOpen) {
     if (isOpen) {
-      const data = drawerApi.getData<{ accountId: number }>();
-      if (data?.accountId) {
+      const data = drawerApi.getData<{
+        accountId: number;
+        accountName?: string | null;
+        accountPhone?: string;
+        currentBalance?: number;
+      }>();
+      if (data) {
         accountId.value = data.accountId;
-        await loadUserInfo();
-        await gridApi.query();
+        // 直接使用传递过来的用户信息
+        userInfo.value = {
+          accountId: data.accountId,
+          accountName: data.accountName || null,
+          accountPhone: data.accountPhone || '',
+          currentBalance: data.currentBalance || 0,
+        };
+        console.log('Set userInfo:', userInfo.value);
+        // 确保响应式更新
+        await nextTick();
+        console.log('After nextTick, userInfo:', userInfo.value);
       }
     } else {
       accountId.value = undefined;
-      userInfo.value = undefined;
+      userInfo.value = null;
+    }
+  },
+  async onOpened() {
+    // 抽屉完全打开后再查询表格数据
+    if (accountId.value) {
+      try {
+        await gridApi.query();
+      } catch (error) {
+        console.error('Failed to query grid:', error);
+      }
     }
   },
 });
@@ -92,6 +123,20 @@ const [Grid, gridApi] = useVbenVxeGrid({
         },
       },
       {
+        field: 'extra',
+        title: '扩展信息',
+        minWidth: 200,
+        showOverflow: true,
+        slots: {
+          default: ({ row }) => {
+            if (!row.extra || Object.keys(row.extra).length === 0) {
+              return h('span', { class: 'text-gray-400' }, '无');
+            }
+            return h('span', {}, JSON.stringify(row.extra));
+          },
+        },
+      },
+      {
         field: 'createdAt',
         title: '时间',
         width: 180,
@@ -100,6 +145,7 @@ const [Grid, gridApi] = useVbenVxeGrid({
     height: 'auto',
     keepSource: true,
     proxyConfig: {
+      autoLoad: false, // 禁用自动加载，手动在 onOpened 中调用
       ajax: {
         query: async ({ page }) => {
           if (!accountId.value) {
@@ -109,12 +155,7 @@ const [Grid, gridApi] = useVbenVxeGrid({
             page: page.currentPage,
             pageSize: page.pageSize,
           });
-          userInfo.value = {
-            accountId: result.accountId,
-            accountName: result.accountName,
-            accountPhone: result.accountPhone,
-            currentBalance: result.currentBalance,
-          };
+          // 用户信息已从列表传递，不需要从API更新
           return {
             items: result.items,
             total: result.total,
@@ -135,41 +176,27 @@ const [Grid, gridApi] = useVbenVxeGrid({
   } as VxeTableGridOptions,
 });
 
-async function loadUserInfo() {
-  if (!accountId.value) return;
-  try {
-    const result = await getPointsDetail(accountId.value, { page: 1, pageSize: 1 });
-    userInfo.value = {
-      accountId: result.accountId,
-      accountName: result.accountName,
-      accountPhone: result.accountPhone,
-      currentBalance: result.currentBalance,
-    };
-  } catch (error: any) {
-    message.error(error?.response?.data?.detail || '加载用户信息失败');
-  }
-}
 </script>
 
 <template>
   <Drawer title="积分记录详情" class="w-[900px]">
-    <div v-if="userInfo" class="mb-4 space-y-2 rounded-lg bg-gray-50 p-4">
+    <div v-if="userInfo" class="mb-4 space-y-2 p-4">
       <div class="flex items-center gap-4">
         <div>
           <span class="text-gray-500">用户ID：</span>
-          <span class="font-medium">{{ userInfo.accountId }}</span>
+          <span class="font-medium">{{ displayAccountId }}</span>
         </div>
         <div>
           <span class="text-gray-500">用户名称：</span>
-          <span class="font-medium">{{ userInfo.accountName || '未知' }}</span>
+          <span class="font-medium">{{ displayAccountName }}</span>
         </div>
         <div>
           <span class="text-gray-500">手机号：</span>
-          <span class="font-medium">{{ userInfo.accountPhone }}</span>
+          <span class="font-medium">{{ displayAccountPhone }}</span>
         </div>
         <div>
           <span class="text-gray-500">当前余额：</span>
-          <span class="text-lg font-bold text-blue-600">{{ userInfo.currentBalance }}</span>
+          <span class="text-lg font-bold text-blue-600">{{ displayCurrentBalance }}</span>
         </div>
       </div>
     </div>
