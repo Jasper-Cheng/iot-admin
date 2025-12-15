@@ -68,20 +68,22 @@ function setupAccessGuard(router: Router) {
         return true;
       }
 
-      // 没有访问权限，跳转登录页面
-      if (to.fullPath !== LOGIN_PATH) {
-        return {
-          path: LOGIN_PATH,
-          // 如不需要，直接删除 query
-          query:
-            to.fullPath === preferences.app.defaultHomePath
-              ? {}
-              : { redirect: encodeURIComponent(to.fullPath) },
-          // 携带当前跳转的页面，登录后重新跳转该页面
-          replace: true,
-        };
+      // 访问登录页，允许访问
+      if (to.fullPath === LOGIN_PATH || to.path === LOGIN_PATH) {
+        return true;
       }
-      return to;
+
+      // 没有访问权限，跳转登录页面
+      return {
+        path: LOGIN_PATH,
+        // 如不需要，直接删除 query
+        query:
+          to.fullPath === preferences.app.defaultHomePath
+            ? {}
+            : { redirect: encodeURIComponent(to.fullPath) },
+        // 携带当前跳转的页面，登录后重新跳转该页面
+        replace: true,
+      };
     }
 
     // 是否已经生成过动态路由
@@ -107,10 +109,16 @@ function setupAccessGuard(router: Router) {
     accessStore.setAccessRoutes(accessibleRoutes);
     accessStore.setIsAccessChecked(true);
     // 后端不返回 homePath，统一使用 defaultHomePath
-    const redirectPath = (from.query.redirect ??
-      (to.path === preferences.app.defaultHomePath
-        ? preferences.app.defaultHomePath
-        : to.fullPath)) as string;
+    // 如果是从登录页跳转过来的，忽略登录页的 redirect 参数，使用目标路径或默认路径
+    // 这样可以避免登录失败后，URL 中保留的 redirect 参数影响登录成功后的跳转
+    const redirectPath = (from.path === LOGIN_PATH
+      ? (to.path === preferences.app.defaultHomePath
+          ? preferences.app.defaultHomePath
+          : to.fullPath)
+      : (from.query.redirect ??
+        (to.path === preferences.app.defaultHomePath
+          ? preferences.app.defaultHomePath
+          : to.fullPath))) as string;
 
     return {
       ...router.resolve(decodeURIComponent(redirectPath)),
