@@ -551,6 +551,7 @@ async function handleRemoveDevice(deviceId: number) {
 }
 
 const [Drawer, drawerApi] = useVbenDrawer({
+  footer: false, // 隐藏默认的 footer 按钮
   async onConfirm() {
     const { valid } = await formApi.validate();
     if (!valid) return;
@@ -628,6 +629,18 @@ const availableDevices = computed(() => {
 <template>
   <Drawer :title="getDrawerTitle" class="w-[800px]">
     <Form />
+    
+    <!-- 操作按钮 -->
+    <div class="mt-6 flex justify-end gap-2">
+      <Button @click="drawerApi.close()">取消</Button>
+      <Button
+        type="primary"
+        :loading="drawerApi.useStore((state) => state.submitting)?.value ?? false"
+        @click="drawerApi.onConfirm()"
+      >
+        保存
+      </Button>
+    </div>
     
     <div v-if="id" class="mt-6 space-y-6">
       <!-- 成员管理 -->
