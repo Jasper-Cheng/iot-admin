@@ -42,6 +42,40 @@ export function useFormSchema(): VbenFormSchema[] {
       rules: 'required',
     },
     {
+      component: 'ApiSelect',
+      fieldName: 'versionId',
+      label: '版本',
+      dependencies: {
+        triggerFields: ['type'],
+        if: (formValues: any) => {
+          return formValues.type === 'update';
+        },
+        componentProps: (formValues: any) => {
+          const isUpdate = formValues.type === 'update';
+          return {
+            placeholder: '请选择版本',
+            disabled: !isUpdate,
+            api: async () => {
+              const { getVersionList } = await import('#/api/iot/version');
+              const result = await getVersionList({ pageSize: 100 });
+              return (result.items || []).map((version) => ({
+                label: `${version.versionCode}_${version.versionName}`,
+                value: version.id,
+              }));
+            },
+            resultField: '',
+            labelField: 'label',
+            valueField: 'value',
+            immediate: false,
+            dropdownMatchSelectWidth: false,
+            dropdownStyle: {
+              minWidth: '300px',
+            },
+          };
+        },
+      },
+    },
+    {
       component: 'Select',
       componentProps: {
         options: [
