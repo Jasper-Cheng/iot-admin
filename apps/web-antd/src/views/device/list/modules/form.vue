@@ -193,6 +193,11 @@ const [Form, formApi] = useVbenForm({
         filterOption: (input: string, option: any) => {
           return option.label.toLowerCase().indexOf(input.toLowerCase()) >= 0;
         },
+        dropdownMatchSelectWidth: false,
+        dropdownStyle: {
+          minWidth: '300px',
+        },
+        optionLabelProp: 'label',
       },
     },
   ],
