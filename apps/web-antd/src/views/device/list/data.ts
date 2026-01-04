@@ -65,13 +65,11 @@ export function useGridFormSchema(): VbenFormSchema[] {
       componentProps: {
         allowClear: true,
         options: [
-          { label: '未配置', value: 'unconfigured' },
-          { label: '已配置', value: 'configured' },
           { label: '未绑定', value: 'unbound' },
           { label: '已绑定', value: 'bound' },
           { label: '离线', value: 'offline' },
           { label: '在线', value: 'online' },
-          { label: '故障', value: 'fault' },
+          { label: '致命', value: 'fatal' },
         ],
         placeholder: '请选择状态',
       },
@@ -82,13 +80,11 @@ export function useGridFormSchema(): VbenFormSchema[] {
 }
 
 const statusMap: Record<string, { color: string; text: string }> = {
-  unconfigured: { text: '未配置', color: 'default' },
-  configured: { text: '已配置', color: 'processing' },
   unbound: { text: '未绑定', color: 'warning' },
   bound: { text: '已绑定', color: 'processing' },
   offline: { text: '离线', color: 'default' },
   online: { text: '在线', color: 'success' },
-  fault: { text: '故障', color: 'error' },
+  fatal: { text: '致命', color: 'error' },
 };
 
 /** 表格列定义 */

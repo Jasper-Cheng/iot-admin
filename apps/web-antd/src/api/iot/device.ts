@@ -9,7 +9,7 @@ export namespace DeviceApi {
     thingModelId?: number;
     name: string;
     sn: string;
-    status: 'unconfigured' | 'configured' | 'unbound' | 'bound' | 'offline' | 'online' | 'fault' | 'fatal';
+    status: 'unbound' | 'bound' | 'offline' | 'online' | 'fatal';
     createdAt: string;
     // 扩展字段（用于显示）
     accountName?: string;
