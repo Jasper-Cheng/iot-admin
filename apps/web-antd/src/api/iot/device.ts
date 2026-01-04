@@ -121,6 +121,8 @@ export function deleteDevice(id: number) {
 export function getDeviceNetworkList(params: {
   page?: number;
   pageSize?: number;
+  deviceSn?: string;
+  deviceName?: string;
 }) {
   return requestClient.get<{ items: DeviceApi.NetworkInfo[]; total: number }>(
     '/network/list',

@@ -14,6 +14,15 @@ export function useGridFormSchema(): VbenFormSchema[] {
         allowClear: true,
       },
     },
+    {
+      component: 'Input',
+      fieldName: 'deviceName',
+      label: '设备名称',
+      componentProps: {
+        placeholder: '请输入设备名称',
+        allowClear: true,
+      },
+    },
   ];
 }
 
@@ -78,7 +87,7 @@ export function useColumns(): VxeTableGridOptions<DeviceApi.NetworkInfo>['column
       title: 'Wi-Fi密码',
       width: 150,
       slots: {
-        default: ({ row }) => (row.wifiPassword ? '******' : '-'),
+        default: ({ row }) => row.wifiPassword || '-',
       },
     },
     {
