@@ -54,16 +54,17 @@ export namespace DeviceApi {
 
   export interface NetworkInfo {
     id: number;
-    deviceId: number;
-    deviceSn?: string;
-    deviceName?: string;
-    netType: string; // 'wifi' | 'ble' | 'cellular' | 'zigbee'
-    name?: string; // 网络名称（SSID 或蓝牙名称）
-    ip?: string;
-    mac?: string;
-    rssi?: number;
-    connectState: 0 | 1 | 2; // 0=断开, 1=连接中, 2=已连接
-    extra?: Record<string, any>;
+    sn: string;
+    deviceSn: string;
+    deviceName?: string | null;
+    ip?: string | null;
+    mac?: string | null;
+    bleName?: string | null;
+    wifiName?: string | null;
+    wifiPassword?: string | null;
+    mqttBroker?: string | null;
+    mqttPort?: number | null;
+    firmware?: string | null;
     lastUpdate: string;
   }
 

@@ -1,80 +1,9 @@
 import { usePageResponseSuccess } from '../../../utils/response';
 
-// Mock 网络信息数据（基于新的 device_network 表结构）
-const MOCK_NETWORK_INFO = [
-  {
-    id: 1,
-    deviceId: 1,
-    deviceSn: 'TEMP001-2024-001',
-    deviceName: '客厅温度传感器',
-    netType: 'wifi',
-    name: 'Home_WiFi_5G',
-    mac: 'AA:BB:CC:DD:EE:01',
-    ip: '192.168.1.101',
-    rssi: -45,
-    connectState: 2,
-    extra: { band: '5G', gateway: '192.168.1.1' },
-    lastUpdate: '2024-12-03 10:30:00',
-  },
-  {
-    id: 2,
-    deviceId: 2,
-    deviceSn: 'HUM001-2024-001',
-    deviceName: '卧室湿度传感器',
-    netType: 'wifi',
-    name: 'Home_WiFi_2.4G',
-    mac: 'AA:BB:CC:DD:EE:02',
-    ip: '192.168.1.102',
-    rssi: -65,
-    connectState: 0,
-    extra: { band: '2.4G', gateway: '192.168.1.1' },
-    lastUpdate: '2024-12-02 18:00:00',
-  },
-  {
-    id: 3,
-    deviceId: 3,
-    deviceSn: 'ENV001-2024-001',
-    deviceName: '客厅环境监测器',
-    netType: 'wifi',
-    name: 'Home_WiFi_5G',
-    mac: 'AA:BB:CC:DD:EE:03',
-    ip: '192.168.1.103',
-    rssi: -50,
-    connectState: 2,
-    extra: { band: '5G', gateway: '192.168.1.1' },
-    lastUpdate: '2024-12-03 11:00:00',
-  },
-  {
-    id: 4,
-    deviceId: 4,
-    deviceSn: 'M701001-2024-001',
-    deviceName: '主卧空气质量监测器',
-    netType: 'ble',
-    name: 'M701001-2024-001',
-    mac: 'AA:BB:CC:DD:EE:04',
-    ip: null,
-    rssi: -60,
-    connectState: 2,
-    extra: { pairingMode: 'normal', firmwareVersion: '1.2.3' },
-    lastUpdate: '2024-12-03 09:45:00',
-  },
-  {
-    id: 5,
-    deviceId: 5,
-    deviceSn: 'TEMP001-2024-002',
-    deviceName: '书房温度传感器',
-    netType: 'wifi',
-    name: 'Office_WiFi',
-    mac: 'AA:BB:CC:DD:EE:05',
-    ip: '192.168.2.105',
-    rssi: -75,
-    connectState: 1,
-    extra: { band: '2.4G', gateway: '192.168.2.1' },
-    lastUpdate: '2024-12-01 08:00:00',
-  },
-];
-
 export default eventHandler(async (event) => {
-  const { page = 1, pageSize = 10 } = getQuery(event);
-  return usePageResponseSuccess(page, pageSize, MOCK_NETWORK_INFO);
+  const query = getQuery(event);
+  const page = query.page ? String(query.page) : '1';
+  const pageSize = query.pageSize ? String(query.pageSize) : '10';
+  // 返回空数组，真实数据应从真实后端获取
+  return usePageResponseSuccess(page, pageSize, []);
 });

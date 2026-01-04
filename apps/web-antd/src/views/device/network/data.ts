@@ -14,43 +14,8 @@ export function useGridFormSchema(): VbenFormSchema[] {
         allowClear: true,
       },
     },
-    {
-      component: 'Select',
-      componentProps: {
-        allowClear: true,
-        options: [
-          { label: 'Wi-Fi', value: 'wifi' },
-          { label: '蓝牙', value: 'ble' },
-          { label: 'Zigbee', value: 'zigbee' },
-        ],
-        placeholder: '请选择连接类型',
-      },
-      fieldName: 'type',
-      label: '连接类型',
-    },
-    {
-      component: 'Select',
-      componentProps: {
-        allowClear: true,
-        options: [
-          { label: '优秀', value: 'excellent' },
-          { label: '良好', value: 'good' },
-          { label: '一般', value: 'fair' },
-          { label: '较弱', value: 'weak' },
-        ],
-        placeholder: '请选择信号强度',
-      },
-      fieldName: 'signalStrength',
-      label: '信号强度',
-    },
   ];
 }
-
-const typeMap: Record<string, string> = {
-  wifi: 'Wi-Fi',
-  ble: '蓝牙',
-  zigbee: 'Zigbee',
-};
 
 /** 表格列定义 */
 export function useColumns(): VxeTableGridOptions<DeviceApi.NetworkInfo>['columns'] {
@@ -63,7 +28,7 @@ export function useColumns(): VxeTableGridOptions<DeviceApi.NetworkInfo>['column
     {
       field: 'deviceSn',
       title: '设备SN',
-      width: 150,
+      width: 180,
       slots: {
         default: ({ row }) => row.deviceSn || '-',
       },
@@ -74,24 +39,6 @@ export function useColumns(): VxeTableGridOptions<DeviceApi.NetworkInfo>['column
       minWidth: 150,
       slots: {
         default: ({ row }) => row.deviceName || '-',
-      },
-    },
-    {
-      field: 'netType',
-      title: '网络类型',
-      width: 100,
-      slots: {
-        default: ({ row }) => {
-          return typeMap[row.netType] || row.netType;
-        },
-      },
-    },
-    {
-      field: 'name',
-      title: '网络名称',
-      width: 150,
-      slots: {
-        default: ({ row }) => row.name || '-',
       },
     },
     {
@@ -111,35 +58,60 @@ export function useColumns(): VxeTableGridOptions<DeviceApi.NetworkInfo>['column
       },
     },
     {
-      field: 'rssi',
-      title: 'RSSI',
-      width: 100,
+      field: 'bleName',
+      title: '蓝牙名称',
+      width: 150,
       slots: {
-        default: ({ row }) => {
-          if (row.rssi === undefined || row.rssi === null) {
-            return '-';
-          }
-          return `${row.rssi} dBm`;
-        },
+        default: ({ row }) => row.bleName || '-',
       },
     },
     {
-      field: 'extra',
-      title: '额外信息',
-      minWidth: 200,
+      field: 'wifiName',
+      title: 'Wi-Fi名称',
+      width: 150,
       slots: {
-        default: ({ row }) => {
-          if (!row.extra || Object.keys(row.extra).length === 0) {
-            return '-';
-          }
-          return JSON.stringify(row.extra);
-        },
+        default: ({ row }) => row.wifiName || '-',
+      },
+    },
+    {
+      field: 'wifiPassword',
+      title: 'Wi-Fi密码',
+      width: 150,
+      slots: {
+        default: ({ row }) => (row.wifiPassword ? '******' : '-'),
+      },
+    },
+    {
+      field: 'mqttBroker',
+      title: 'MQTT代理',
+      width: 180,
+      slots: {
+        default: ({ row }) => row.mqttBroker || '-',
+      },
+    },
+    {
+      field: 'mqttPort',
+      title: 'MQTT端口',
+      width: 120,
+      slots: {
+        default: ({ row }) => (row.mqttPort ? String(row.mqttPort) : '-'),
+      },
+    },
+    {
+      field: 'firmware',
+      title: '固件版本',
+      width: 120,
+      slots: {
+        default: ({ row }) => row.firmware || '-',
       },
     },
     {
       field: 'lastUpdate',
       title: '更新时间',
       width: 180,
+      slots: {
+        default: ({ row }) => row.lastUpdate || '-',
+      },
     },
   ];
 }

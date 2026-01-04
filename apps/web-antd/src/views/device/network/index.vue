@@ -18,6 +18,9 @@ const [Grid] = useVbenVxeGrid({
     columns: useColumns(),
     height: 'auto',
     keepSource: true,
+    sortConfig: {
+      defaultSort: { field: 'id', order: 'asc' },
+    },
     proxyConfig: {
       ajax: {
         query: async ({ page }, formValues) => {
