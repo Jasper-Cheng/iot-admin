@@ -35,6 +35,15 @@ export function useGridFormSchema(): VbenFormSchema[] {
       },
     },
     {
+      component: 'Input',
+      fieldName: 'bleName',
+      label: '蓝牙名称',
+      componentProps: {
+        placeholder: '请输入蓝牙名称',
+        allowClear: true,
+      },
+    },
+    {
       component: 'ApiSelect',
       fieldName: 'accountId',
       label: '所属用户id',
@@ -111,6 +120,26 @@ export function useColumns<T = DeviceApi.Device>(
       field: 'modelName',
       title: '型号',
       width: 150,
+    },
+    {
+      field: 'ble_name',
+      title: '蓝牙名称',
+      width: 150,
+      slots: {
+        default: ({ row }) => {
+          return h('span', {}, row.ble_name || '-');
+        },
+      },
+    },
+    {
+      field: 'ble_mac',
+      title: '蓝牙MAC',
+      width: 150,
+      slots: {
+        default: ({ row }) => {
+          return h('span', {}, row.ble_mac || '-');
+        },
+      },
     },
     {
       field: 'status',

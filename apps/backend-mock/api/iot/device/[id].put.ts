@@ -17,6 +17,8 @@ const MOCK_DEVICES = [
     familyIds: [1],
     familyNames: ['我的家'],
     createdAt: '2024-01-15 09:00:00',
+    ble_name: 'TempSensor-001',
+    ble_mac: 'AA:BB:CC:DD:EE:01',
   },
   {
     id: 2,
@@ -31,6 +33,8 @@ const MOCK_DEVICES = [
     familyIds: [2],
     familyNames: ['李四的家'],
     createdAt: '2024-02-20 14:30:00',
+    ble_name: 'HumSensor-001',
+    ble_mac: 'AA:BB:CC:DD:EE:02',
   },
   {
     id: 3,
@@ -45,6 +49,8 @@ const MOCK_DEVICES = [
     familyIds: [1],
     familyNames: ['我的家'],
     createdAt: '2024-03-10 10:00:00',
+    ble_name: 'EnvMonitor-001',
+    ble_mac: 'AA:BB:CC:DD:EE:03',
   },
   {
     id: 4,
@@ -59,6 +65,8 @@ const MOCK_DEVICES = [
     familyIds: [1],
     familyNames: ['我的家'],
     createdAt: '2024-04-05 16:20:00',
+    ble_name: 'AirQuality-001',
+    ble_mac: 'AA:BB:CC:DD:EE:04',
   },
   {
     id: 5,
@@ -73,6 +81,8 @@ const MOCK_DEVICES = [
     familyIds: [3],
     familyNames: ['赵六的家'],
     createdAt: '2024-05-12 11:10:00',
+    ble_name: 'TempSensor-002',
+    ble_mac: 'AA:BB:CC:DD:EE:05',
   },
 ];
 
@@ -136,6 +146,12 @@ export default eventHandler(async (event) => {
   if (body.familyIds !== undefined) {
     device.familyIds = body.familyIds || [];
     device.familyNames = device.familyIds.length > 0 ? getFamilyNames(device.familyIds) : [];
+  }
+  if (body.ble_name !== undefined) {
+    device.ble_name = body.ble_name;
+  }
+  if (body.ble_mac !== undefined) {
+    device.ble_mac = body.ble_mac || undefined;
   }
 
   return useResponseSuccess(device);

@@ -15,6 +15,8 @@ export namespace DeviceApi {
     accountName?: string;
     familyIds?: number[];
     familyNames?: string[];
+    ble_name?: string;
+    ble_mac?: string;
   }
 
   export interface DeviceListParams {
@@ -25,6 +27,7 @@ export namespace DeviceApi {
     modelId?: number;
     accountId?: number;
     status?: string;
+    bleName?: string;
   }
 
   export interface DeviceListResult {
@@ -38,6 +41,8 @@ export namespace DeviceApi {
     modelId: number;
     accountId?: number | null;
     status?: 'unbound' | 'bound' | 'offline' | 'online' | 'fatal';
+    ble_name: string;
+    ble_mac?: string;
   }
 
   export interface CreateDeviceResult {
@@ -107,6 +112,8 @@ export function updateDevice(
     modelId?: number;
     accountId?: number | null; // null 表示解绑用户
     familyIds?: number[]; // 空数组表示移除所有家庭关联
+    ble_name?: string;
+    ble_mac?: string;
   },
 ) {
   return requestClient.put(`/device/${id}`, data);

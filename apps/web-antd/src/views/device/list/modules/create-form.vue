@@ -325,6 +325,23 @@ const [Form, formApi] = useVbenForm({
         },
       },
     },
+    {
+      component: 'Input',
+      fieldName: 'ble_name',
+      label: '蓝牙名称',
+      rules: 'required',
+      componentProps: {
+        placeholder: '请输入蓝牙名称',
+      },
+    },
+    {
+      component: 'Input',
+      fieldName: 'ble_mac',
+      label: '蓝牙MAC',
+      componentProps: {
+        placeholder: '请输入蓝牙MAC地址（选填）',
+      },
+    },
   ],
   showDefaultActions: false,
 });
@@ -377,6 +394,8 @@ const [Drawer, drawerApi] = useVbenDrawer({
         modelId: values.modelId,
         accountId: null,
         status: 'unbound' as const,
+        ble_name: values.ble_name,
+        ble_mac: values.ble_mac || undefined,
       };
       await createDevice(payload);
       message.success('设备入库成功');

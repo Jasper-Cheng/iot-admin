@@ -200,6 +200,23 @@ const [Form, formApi] = useVbenForm({
         optionLabelProp: 'label',
       },
     },
+    {
+      component: 'Input',
+      fieldName: 'ble_name',
+      label: '蓝牙名称',
+      rules: 'required',
+      componentProps: {
+        placeholder: '请输入蓝牙名称',
+      },
+    },
+    {
+      component: 'Input',
+      fieldName: 'ble_mac',
+      label: '蓝牙MAC',
+      componentProps: {
+        placeholder: '请输入蓝牙MAC地址（选填）',
+      },
+    },
   ],
   showDefaultActions: false,
 });
@@ -219,6 +236,8 @@ const [Drawer, drawerApi] = useVbenDrawer({
         modelId: values.modelId,
         // 如果 accountId 为空（清空选择），传递 null；否则传递实际值
         accountId: values.accountId === undefined || values.accountId === null ? null : values.accountId,
+        ble_name: values.ble_name,
+        ble_mac: values.ble_mac || undefined,
       };
       await updateDevice(id.value!, payload);
       emits('success');
@@ -239,10 +258,13 @@ const [Drawer, drawerApi] = useVbenDrawer({
         id.value = data.id;
 
         await nextTick();
-        formApi.setValues({
-          name: data.name,
+        // 确保所有字段都正确回填，包括 ble_name 和 ble_mac
+        await formApi.setValues({
+          name: data.name || '',
           modelId: data.modelId,
           accountId: data.accountId,
+          ble_name: data.ble_name || '',
+          ble_mac: data.ble_mac || '',
         });
       } else {
         formData.value = undefined;
