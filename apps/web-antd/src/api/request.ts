@@ -15,8 +15,8 @@ import { message } from 'ant-design-vue';
 
 import { useAuthStore } from '#/store';
 
-// 固定使用 /api/v1/iot 作为 API 基础路径（与后端地址 http://localhost:8000/api/v1/iot 对应）
-const apiURL = '/api/v1/iot';
+// 固定使用 /api/v1/admin 作为 API 基础路径（与后端地址 http://localhost:8000/api/v1/admin 对应）
+const apiURL = '/api/v1/admin';
 
 function createRequestClient(baseURL: string, options?: RequestClientOptions) {
   const client = new RequestClient({

@@ -14,8 +14,8 @@ export default defineConfig(async () => {
         proxy: {
           '/api': {
             changeOrigin: true,
-            // baseURL 是 /api/v1/iot，所以所有 /api/v1/* 路径直接转发，不需要重写
-            // 前端请求: /api/v1/iot/device/list -> http://localhost:8000/api/v1/iot/device/list
+            // baseURL 是 /api/v1/admin，所以所有 /api/v1/* 路径直接转发，不需要重写
+            // 前端请求: /api/v1/admin/device/list -> http://localhost:8000/api/v1/admin/device/list
             // 前端请求: /api/v1/web/auth/login -> http://localhost:8000/api/v1/web/auth/login
             rewrite: (path) => path, // 不进行路径重写，直接转发
             // 固定后端服务器地址
