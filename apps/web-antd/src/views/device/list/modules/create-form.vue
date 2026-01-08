@@ -153,15 +153,6 @@ function handleModelScroll(e: Event) {
 const [Form, formApi] = useVbenForm({
   schema: [
     {
-      component: 'Input',
-      fieldName: 'name',
-      label: '设备名称',
-      rules: 'required',
-      componentProps: {
-        placeholder: '请输入设备名称',
-      },
-    },
-    {
       component: 'Select',
       fieldName: 'modelId',
       label: '设备型号',
@@ -182,41 +173,53 @@ const [Form, formApi] = useVbenForm({
           if (value) {
             // 获取型号信息
             const modelItem = modelLoader.getItemById(value);
-            if (modelItem && modelItem.code) {
-              selectedModelCode.value = modelItem.code;
-              const prefix = generateSnPrefix(modelItem.code);
-              snPrefix.value = prefix;
+            if (modelItem) {
+              // 自动填充设备名称为设备型号名称
+              if (modelItem.name) {
+                await formApi.setFieldValue('name', modelItem.name);
+              }
               
-              // 获取当前SN后缀部分
-              const currentValues = await formApi.getValues();
-              const currentSn = currentValues.sn || '';
-              
-              if (currentSn) {
-                // 如果已有SN值，提取后缀部分
-                const oldModelId = currentValues.modelId;
-                if (oldModelId && oldModelId !== value) {
-                  const oldModelItem = modelLoader.getItemById(oldModelId);
-                  if (oldModelItem && oldModelItem.code) {
-                    const oldPrefix = generateSnPrefix(oldModelItem.code);
-                    if (currentSn.startsWith(oldPrefix)) {
-                      // 提取旧后缀
-                      snSuffix.value = currentSn.slice(oldPrefix.length);
+              if (modelItem.code) {
+                selectedModelCode.value = modelItem.code;
+                const prefix = generateSnPrefix(modelItem.code);
+                snPrefix.value = prefix;
+                
+                // 获取当前SN后缀部分
+                const currentValues = await formApi.getValues();
+                const currentSn = currentValues.sn || '';
+                
+                if (currentSn) {
+                  // 如果已有SN值，提取后缀部分
+                  const oldModelId = currentValues.modelId;
+                  if (oldModelId && oldModelId !== value) {
+                    const oldModelItem = modelLoader.getItemById(oldModelId);
+                    if (oldModelItem && oldModelItem.code) {
+                      const oldPrefix = generateSnPrefix(oldModelItem.code);
+                      if (currentSn.startsWith(oldPrefix)) {
+                        // 提取旧后缀
+                        snSuffix.value = currentSn.slice(oldPrefix.length);
+                      } else {
+                        snSuffix.value = '';
+                      }
                     } else {
                       snSuffix.value = '';
                     }
                   } else {
+                    // 如果没有旧型号，清空后缀
                     snSuffix.value = '';
                   }
                 } else {
-                  // 如果没有旧型号，清空后缀
                   snSuffix.value = '';
                 }
+                
+                // 更新SN字段
+                await formApi.setFieldValue('sn', prefix + snSuffix.value);
               } else {
+                selectedModelCode.value = '';
+                snPrefix.value = '';
                 snSuffix.value = '';
+                await formApi.setFieldValue('sn', '');
               }
-              
-              // 更新SN字段
-              await formApi.setFieldValue('sn', prefix + snSuffix.value);
             } else {
               selectedModelCode.value = '';
               snPrefix.value = '';
@@ -230,6 +233,15 @@ const [Form, formApi] = useVbenForm({
             await formApi.setFieldValue('sn', '');
           }
         },
+      },
+    },
+    {
+      component: 'Input',
+      fieldName: 'name',
+      label: '设备名称',
+      rules: 'required',
+      componentProps: {
+        placeholder: '请输入设备名称',
       },
     },
     {
