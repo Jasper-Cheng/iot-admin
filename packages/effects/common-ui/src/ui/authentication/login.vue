@@ -58,20 +58,27 @@ const [Form, formApi] = useVbenForm(
 );
 const router = useRouter();
 
-const REMEMBER_ME_KEY = `REMEMBER_ME_USERNAME_${location.hostname}`;
+const REMEMBER_ME_KEY = `REMEMBER_ME_PHONE_${location.hostname}`;
 
-const localUsername = localStorage.getItem(REMEMBER_ME_KEY) || '';
+const localPhone = localStorage.getItem(REMEMBER_ME_KEY);
 
-const rememberMe = ref(!!localUsername);
+const rememberMe = ref(
+  !!localPhone &&
+    typeof localPhone === 'string' &&
+    localPhone.trim() !== '' &&
+    localPhone !== 'undefined',
+);
 
 async function handleSubmit() {
   const { valid } = await formApi.validate();
   const values = await formApi.getValues();
   if (valid) {
-    localStorage.setItem(
-      REMEMBER_ME_KEY,
-      rememberMe.value ? values?.username : '',
-    );
+    const accountValue = values?.phone;
+    if (rememberMe.value && accountValue && typeof accountValue === 'string' && accountValue.trim() !== '') {
+      localStorage.setItem(REMEMBER_ME_KEY, accountValue);
+    } else {
+      localStorage.setItem(REMEMBER_ME_KEY, '');
+    }
     emit('submit', values);
   }
 }
@@ -81,8 +88,13 @@ function handleGo(path: string) {
 }
 
 onMounted(() => {
-  if (localUsername) {
-    formApi.setFieldValue('username', localUsername);
+  if (
+    localPhone &&
+    typeof localPhone === 'string' &&
+    localPhone.trim() !== '' &&
+    localPhone !== 'undefined'
+  ) {
+    formApi.setFieldValue('phone', localPhone);
   }
 });
 
