@@ -51,7 +51,7 @@ export function useFormSchema(): VbenFormSchema[] {
       fieldName: 'avatar',
       label: '头像',
       componentProps: {
-        avatars: Array.from({ length: 20 }, (_, i) => `/avatars/avatar${i + 1}.png`),
+        avatars: Array.from({ length: 20 }, (_, i) => `/avatars/family/avatar${i + 1}.png`),
       },
     },
   ];

@@ -10,7 +10,7 @@ interface Props {
 }
 
 const props = withDefaults(defineProps<Props>(), {
-  avatars: () => Array.from({ length: 20 }, (_, i) => `/avatars/avatar${i + 1}.png`),
+  avatars: () => Array.from({ length: 20 }, (_, i) => `/avatars/family/avatar${i + 1}.png`),
 });
 
 const emit = defineEmits<{
