@@ -53,10 +53,8 @@ function setupAccessGuard(router: Router) {
     // 基本路由，这些路由不需要进入权限拦截
     if (coreRouteNames.includes(to.name as string)) {
       if (to.path === LOGIN_PATH && accessStore.accessToken) {
-        // 后端不返回 homePath，统一使用 defaultHomePath
-        return decodeURIComponent(
-          (to.query?.redirect as string) || preferences.app.defaultHomePath,
-        );
+        // 已登录用户访问登录页，直接跳转到 /workspace
+        return '/workspace';
       }
       return true;
     }
