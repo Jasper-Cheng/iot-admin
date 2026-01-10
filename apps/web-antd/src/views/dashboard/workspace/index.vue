@@ -436,54 +436,54 @@ function onStatisticClick(stat: typeof statistics.value[0]) {
     </div>
 
     <div class="mt-5 grid grid-cols-1 gap-4 lg:grid-cols-3">
-      <!-- 待办反馈 -->
+      <!-- 操作日志 -->
       <Card
         :body-style="{ height: 'calc(500px - 57px)', display: 'flex', flexDirection: 'column', padding: 0, overflow: 'hidden' }"
         style="height: 500px; display: flex; flex-direction: column;"
       >
         <template #title>
-          <span class="text-lg">待办反馈</span>
+          <span class="text-lg">操作日志</span>
         </template>
         <div 
           class="flex-1 overflow-y-auto p-5 min-h-0 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]"
-          @scroll="handleFeedbackScroll"
+          @scroll="handleLogsScroll"
         >
-          <ul v-if="pendingFeedbacks.length > 0" class="divide-border w-full divide-y" role="list">
+          <ul v-if="operationLogs.length > 0" class="divide-border w-full divide-y" role="list">
             <li
-              v-for="feedback in pendingFeedbacks"
-              :key="feedback.id"
+              v-for="log in operationLogs"
+              :key="log.id"
               class="flex cursor-pointer justify-between gap-x-6 py-3 rounded-lg px-0 hover:bg-muted/50 transition-colors"
-              @click="openReplyModal(feedback)"
+              @click="goToOperationLogs"
             >
               <div class="flex min-w-0 flex-auto items-center gap-x-4">
                 <div class="min-w-0 flex-auto">
                   <div class="flex items-center gap-2">
                     <p class="text-foreground text-sm font-semibold leading-6">
-                      {{ feedback.accountName || feedback.name || '匿名用户' }}
+                      {{ log.accountName || `用户${log.accountId}` }}
                     </p>
-                    <Tag :color="feedbackTypeMap[feedback.type]?.color || 'default'">
-                      {{ feedbackTypeMap[feedback.type]?.text || '其他' }}
+                    <Tag :color="operationTypeMap[log.operationType]?.color || 'default'">
+                      {{ operationTypeMap[log.operationType]?.text || log.operationType }}
                     </Tag>
                   </div>
                   <p class="text-foreground/80 mt-1 line-clamp-2 text-xs leading-5">
-                    {{ feedback.content }}
+                    {{ log.description }}
                   </p>
                 </div>
               </div>
               <div class="hidden h-full shrink-0 sm:flex sm:flex-col sm:items-end">
                 <span class="text-foreground/80 text-xs leading-6">
-                  {{ formatDate(feedback.createdAt) }}
+                  {{ formatDate(log.createdAt) }}
                 </span>
               </div>
             </li>
           </ul>
-          <div v-else-if="!loadingFeedbacks" class="py-10 text-center text-foreground/60 text-sm">
-            暂无待处理反馈
+          <div v-else-if="!loadingLogs" class="py-10 text-center text-foreground/60 text-sm">
+            暂无操作日志
           </div>
-          <div v-if="loadingFeedbacks && pendingFeedbacks.length === 0" class="py-10 text-center text-foreground/60 text-sm">
+          <div v-if="loadingLogs && operationLogs.length === 0" class="py-10 text-center text-foreground/60 text-sm">
             加载中...
           </div>
-          <div v-if="loadingFeedbacks && pendingFeedbacks.length > 0" class="py-4 text-center text-foreground/60 text-sm">
+          <div v-if="loadingLogs && operationLogs.length > 0" class="py-4 text-center text-foreground/60 text-sm">
             加载中...
           </div>
         </div>
@@ -542,54 +542,54 @@ function onStatisticClick(stat: typeof statistics.value[0]) {
         </div>
       </Card>
       
-      <!-- 操作日志 -->
+      <!-- 待办反馈 -->
       <Card
         :body-style="{ height: 'calc(500px - 57px)', display: 'flex', flexDirection: 'column', padding: 0, overflow: 'hidden' }"
         style="height: 500px; display: flex; flex-direction: column;"
       >
         <template #title>
-          <span class="text-lg">操作日志</span>
+          <span class="text-lg">待办反馈</span>
         </template>
         <div 
           class="flex-1 overflow-y-auto p-5 min-h-0 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]"
-          @scroll="handleLogsScroll"
+          @scroll="handleFeedbackScroll"
         >
-          <ul v-if="operationLogs.length > 0" class="divide-border w-full divide-y" role="list">
+          <ul v-if="pendingFeedbacks.length > 0" class="divide-border w-full divide-y" role="list">
             <li
-              v-for="log in operationLogs"
-              :key="log.id"
+              v-for="feedback in pendingFeedbacks"
+              :key="feedback.id"
               class="flex cursor-pointer justify-between gap-x-6 py-3 rounded-lg px-0 hover:bg-muted/50 transition-colors"
-              @click="goToOperationLogs"
+              @click="openReplyModal(feedback)"
             >
               <div class="flex min-w-0 flex-auto items-center gap-x-4">
                 <div class="min-w-0 flex-auto">
                   <div class="flex items-center gap-2">
                     <p class="text-foreground text-sm font-semibold leading-6">
-                      {{ log.accountName || `用户${log.accountId}` }}
+                      {{ feedback.accountName || feedback.name || '匿名用户' }}
                     </p>
-                    <Tag :color="operationTypeMap[log.operationType]?.color || 'default'">
-                      {{ operationTypeMap[log.operationType]?.text || log.operationType }}
+                    <Tag :color="feedbackTypeMap[feedback.type]?.color || 'default'">
+                      {{ feedbackTypeMap[feedback.type]?.text || '其他' }}
                     </Tag>
                   </div>
                   <p class="text-foreground/80 mt-1 line-clamp-2 text-xs leading-5">
-                    {{ log.description }}
+                    {{ feedback.content }}
                   </p>
                 </div>
               </div>
               <div class="hidden h-full shrink-0 sm:flex sm:flex-col sm:items-end">
                 <span class="text-foreground/80 text-xs leading-6">
-                  {{ formatDate(log.createdAt) }}
+                  {{ formatDate(feedback.createdAt) }}
                 </span>
               </div>
             </li>
           </ul>
-          <div v-else-if="!loadingLogs" class="py-10 text-center text-foreground/60 text-sm">
-            暂无操作日志
+          <div v-else-if="!loadingFeedbacks" class="py-10 text-center text-foreground/60 text-sm">
+            暂无待处理反馈
           </div>
-          <div v-if="loadingLogs && operationLogs.length === 0" class="py-10 text-center text-foreground/60 text-sm">
+          <div v-if="loadingFeedbacks && pendingFeedbacks.length === 0" class="py-10 text-center text-foreground/60 text-sm">
             加载中...
           </div>
-          <div v-if="loadingLogs && operationLogs.length > 0" class="py-4 text-center text-foreground/60 text-sm">
+          <div v-if="loadingFeedbacks && pendingFeedbacks.length > 0" class="py-4 text-center text-foreground/60 text-sm">
             加载中...
           </div>
         </div>
