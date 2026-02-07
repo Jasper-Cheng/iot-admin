@@ -19,6 +19,9 @@ RUN pnpm -F @vben/node-utils run stub && \
     pnpm -F @vben/vite-config run stub && \
     pnpm -F @vben/tailwind-config run stub
 
+# 构建时所需的环境变量（.env.* 被 dockerignore 排除）
+ENV VITE_APP_TITLE=物联网管理平台
+
 # 构建 web-antd 应用
 RUN pnpm run build:antd
 
