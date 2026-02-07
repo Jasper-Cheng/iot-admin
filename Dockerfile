@@ -24,17 +24,16 @@ RUN pnpm run build:antd
 
 FROM nginx:stable-alpine AS production
 
-# 配置 nginx 支持 mjs
-RUN echo "types { application/javascript js mjs; }" > /etc/nginx/conf.d/mjs.conf \
-    && rm -rf /etc/nginx/conf.d/default.conf
+# 删除默认配置
+RUN rm -rf /etc/nginx/conf.d/default.conf
 
 # 复制构建产物 (web-antd 输出到 apps/web-antd/dist)
 COPY --from=builder /app/apps/web-antd/dist /usr/share/nginx/html
 
-# 复制 nginx 配置 (监听 80 以配合 docker-compose 的 8080:80 端口映射)
+# 复制 nginx 配置 (监听 90 端口)
 COPY scripts/deploy/nginx.conf /etc/nginx/nginx.conf
-RUN sed -i 's/listen 8080/listen 80/' /etc/nginx/nginx.conf
+RUN sed -i 's/listen 8080/listen 90/' /etc/nginx/nginx.conf
 
-EXPOSE 80
+EXPOSE 90
 
 CMD ["nginx", "-g", "daemon off;"]
