@@ -57,15 +57,15 @@ const routes: RouteRecordRaw[] = [
           title: $t('page.feedback.list'),
         },
       },
-      {
-        name: 'OperationLog',
-        path: '/system/logs',
-        component: () => import('#/views/account/logs/index.vue'),
-        meta: {
-          icon: 'lucide:file-clock',
-          title: $t('page.account.logs'),
-        },
-      },
+      // {
+      //   name: 'OperationLog',
+      //   path: '/system/logs',
+      //   component: () => import('#/views/account/logs/index.vue'),
+      //   meta: {
+      //     icon: 'lucide:file-clock',
+      //     title: $t('page.account.logs'),
+      //   },
+      // },
     ],
   },
 ];
