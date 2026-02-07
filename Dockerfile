@@ -14,6 +14,11 @@ COPY . /app
 # 安装依赖
 RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm install --frozen-lockfile
 
+# 为 internal 包生成 stub（@vben/vite-config 等依赖 dist/，仅提供 stub 脚本）
+RUN pnpm -F @vben/node-utils run stub && \
+    pnpm -F @vben/vite-config run stub && \
+    pnpm -F @vben/tailwind-config run stub
+
 # 构建 web-antd 应用
 RUN pnpm run build:antd
 
