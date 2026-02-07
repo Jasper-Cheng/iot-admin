@@ -1,7 +1,10 @@
 node_modules
+dist
 .git
 .gitignore
 *.md
-dist
-.turbo
-dist.zip
+.env
+.env.*
+.DS_Store
+*.log
+npm-debug.log*
