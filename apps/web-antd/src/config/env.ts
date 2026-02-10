@@ -9,7 +9,7 @@ const TEST_CONFIG = {
 };
 
 const PRODUCTION_CONFIG = {
-  baseUrl: 'https://192.168.3.196:8000/api', // 改为实际生产 API 地址
+  baseUrl: 'http://192.168.3.196:8000/api', // 改为实际生产 API 地址
 };
 
 const config = CURRENT_ENV === 'production' ? PRODUCTION_CONFIG : TEST_CONFIG;
