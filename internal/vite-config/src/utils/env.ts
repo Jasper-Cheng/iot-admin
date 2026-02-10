@@ -76,7 +76,6 @@ async function loadAndConvertEnv(
   const envConfig = await loadEnv(match, confFiles);
 
   const {
-    VITE_APP_TITLE,
     VITE_ARCHIVER,
     VITE_BASE,
     VITE_COMPRESS,
@@ -93,7 +92,7 @@ async function loadAndConvertEnv(
     .filter((item) => item === 'brotli' || item === 'gzip');
 
   return {
-    appTitle: getString(VITE_APP_TITLE, 'Vben Admin'),
+    appTitle: '物联网管理平台',
     archiver: getBoolean(VITE_ARCHIVER),
     base: getString(VITE_BASE, '/'),
     compress: compressTypes.length > 0,

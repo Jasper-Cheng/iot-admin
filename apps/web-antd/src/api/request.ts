@@ -15,8 +15,10 @@ import { message } from 'ant-design-vue';
 
 import { useAuthStore } from '#/store';
 
-// 固定使用 /api/v1/admin 作为 API 基础路径（与后端地址 http://192.168.3.196:8000/api/v1/admin 对应）
-const apiURL = '/api/v1/admin';
+import appConfig from '#/config/env';
+
+// 直接使用 baseUrl，不走 Vite 代理
+const apiURL = `${appConfig.baseUrl}/v1/admin`;
 
 function createRequestClient(baseURL: string, options?: RequestClientOptions) {
   const client = new RequestClient({
