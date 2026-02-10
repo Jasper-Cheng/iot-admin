@@ -43,9 +43,12 @@
     "@vueuse/core": "catalog:",
     "ant-design-vue": "catalog:",
     "dayjs": "catalog:",
-    "jsencrypt": "^3.5.4",
+    "node-forge": "^1.3.3",
     "pinia": "catalog:",
     "vue": "catalog:",
     "vue-router": "catalog:"
+  },
+  "devDependencies": {
+    "@types/node-forge": "^1.3.14"
   }
 }

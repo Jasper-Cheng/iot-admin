@@ -7,6 +7,9 @@ import { computed, markRaw, onMounted, ref } from 'vue';
 import { AuthenticationLogin, SliderCaptcha, z } from '@vben/common-ui';
 import { $t } from '@vben/locales';
 
+import { message } from 'ant-design-vue';
+import forge from 'node-forge';
+
 import { getRsaPublicKey } from '#/api/core/auth';
 import type { AuthApi } from '#/api/core/auth';
 import { useAuthStore } from '#/store';
@@ -21,64 +24,35 @@ async function loadRsaPublicKey() {
   try {
     const result = await getRsaPublicKey();
     if (result?.public_key) {
-      // 确保公钥格式正确（处理换行符）
       let publicKey = result.public_key.trim();
-      // 确保换行符是 \n 格式（而不是 \r\n）
       publicKey = publicKey.replace(/\r\n/g, '\n');
       rsaPublicKey.value = publicKey;
     }
   } catch (error) {
-    // 静默处理错误，不输出日志
+    console.error('[Login] 获取 RSA 公钥失败:', error);
   }
 }
 
-// 将 PEM 格式的公钥转换为 CryptoKey（用于 Web Crypto API）
-async function importRSAPublicKey(pemKey: string): Promise<CryptoKey> {
-  // 移除 PEM 格式的头部和尾部标记，以及换行符
-  const pemHeader = '-----BEGIN PUBLIC KEY-----';
-  const pemFooter = '-----END PUBLIC KEY-----';
-  const pemContents = pemKey
-    .replace(pemHeader, '')
-    .replace(pemFooter, '')
-    .replace(/\s/g, ''); // 移除所有空白字符
-  
-  // 将 Base64 字符串转换为 ArrayBuffer
-  const binaryDer = base64ToArrayBuffer(pemContents);
-  
-  // 导入公钥（RSA-OAEP 需要指定 hash 算法）
-  return await crypto.subtle.importKey(
-    'spki', // SubjectPublicKeyInfo 格式
-    binaryDer,
-    {
-      name: 'RSA-OAEP',
-      hash: 'SHA-256', // OAEP 需要指定 hash 算法
-    },
-    false, // 不可导出
-    ['encrypt'], // 只能用于加密
-  );
-}
-
-// Base64 字符串转 ArrayBuffer
-function base64ToArrayBuffer(base64: string): ArrayBuffer {
-  const binaryString = atob(base64);
-  const bytes = new Uint8Array(binaryString.length);
-  for (let i = 0; i < binaryString.length; i++) {
-    bytes[i] = binaryString.charCodeAt(i);
+// 使用 node-forge 进行 RSA-OAEP (SHA256) 加密（与后端 Python cryptography 一致）
+function rsaEncrypt(publicKey: string, plainText: string): string | false {
+  try {
+    // 将 PEM 格式公钥解析为 forge 公钥对象
+    const publicKeyObj = forge.pki.publicKeyFromPem(publicKey);
+    // 使用 RSA-OAEP + SHA256 加密（与后端 padding.OAEP + SHA256 匹配）
+    const encrypted = publicKeyObj.encrypt(
+      forge.util.encodeUtf8(plainText),
+      'RSA-OAEP',
+      {
+        md: forge.md.sha256.create(),
+        mgf1: { md: forge.md.sha256.create() },
+      },
+    );
+    // 转为 Base64 编码
+    return forge.util.encode64(encrypted);
+  } catch (error) {
+    console.error('[Login] RSA 加密失败:', error);
+    return false;
   }
-  return bytes.buffer;
-}
-
-// ArrayBuffer 转 Base64 字符串
-function arrayBufferToBase64(buffer: ArrayBuffer): string {
-  const bytes = new Uint8Array(buffer);
-  let binary = '';
-  for (let i = 0; i < bytes.byteLength; i++) {
-    const byte = bytes[i];
-    if (byte !== undefined) {
-      binary += String.fromCharCode(byte);
-    }
-  }
-  return btoa(binary);
 }
 
 onMounted(() => {
@@ -130,34 +104,18 @@ async function handleLogin(values: Recordable<any>) {
     try {
       await loadRsaPublicKey();
       if (!rsaPublicKey.value) {
-        throw new Error('Failed to load RSA public key');
+        throw new Error('获取公钥失败');
       }
-    } catch (error) {
+    } catch {
+      message.error('获取加密公钥失败，请检查网络或后端服务是否正常');
       return;
     }
   }
 
-  // 使用 RSA-OAEP with SHA256 加密密码
-  let encryptedPassword: string;
-  try {
-    // 将 PEM 格式的公钥转换为 CryptoKey
-    const publicKey = await importRSAPublicKey(rsaPublicKey.value);
-    
-    // 将密码转换为 ArrayBuffer
-    const passwordBuffer = new TextEncoder().encode(values.password);
-    
-    // 使用 OAEP with SHA256 加密（hash 在导入密钥时已指定为 SHA-256）
-    const encryptedBuffer = await crypto.subtle.encrypt(
-      {
-        name: 'RSA-OAEP',
-      },
-      publicKey,
-      passwordBuffer,
-    );
-    
-    // 将加密后的 ArrayBuffer 转换为 Base64 字符串
-    encryptedPassword = arrayBufferToBase64(encryptedBuffer);
-  } catch (error) {
+  // 使用 node-forge 进行 RSA-OAEP 加密（兼容 HTTP 环境）
+  const encryptedPassword = rsaEncrypt(rsaPublicKey.value, values.password);
+  if (!encryptedPassword) {
+    message.error('密码加密失败，请刷新页面重试');
     return;
   }
 
