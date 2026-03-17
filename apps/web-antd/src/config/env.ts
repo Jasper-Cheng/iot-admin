@@ -14,7 +14,13 @@ const PRODUCTION_CONFIG = {
 
 const config = CURRENT_ENV === 'production' ? PRODUCTION_CONFIG : TEST_CONFIG;
 
+// 手动切换：true 使用代理（本地开发），false 直连 API（构建/生产）
+export const isDev = true;
+
+const baseUrl = isDev ? '/api' : config.baseUrl;
+
 export default {
   env: CURRENT_ENV,
-  baseUrl: config.baseUrl,
+  baseUrl,
+  isDev,
 };
