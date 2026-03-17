@@ -30,7 +30,6 @@ dev-dist
 .stylelintcache
 .VSCodeCounter
 **/.vitepress/cache
-**/backend-mock/data
 
 # Logs
 logs

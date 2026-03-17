@@ -53,15 +53,13 @@
 | Pinia          | -      | 状态管理               |
 | Vue Router     | -      | 路由管理               |
 | Tailwind CSS   | 3.4.18 | 原子化 CSS 框架        |
-| Nitro          | -      | Mock 后端服务          |
 
 ## 📦 项目结构
 
 ```
 iot-admin/
 ├── apps/
-│   ├── web-antd/          # 主应用（Ant Design Vue）
-│   └── backend-mock/      # Mock 后端服务
+│   └── web-antd/          # 主应用（Ant Design Vue）
 ├── packages/              # 共享包
 │   ├── @core/            # 核心功能
 │   ├── effects/          # 功能模块
@@ -94,7 +92,6 @@ pnpm dev:antd
 
 # 访问地址
 # 前端: http://localhost:5666
-# Mock API: http://localhost:5320/api
 ```
 
 ### 构建生产版本
@@ -131,23 +128,12 @@ src/
 └── utils/           # 工具函数
 ```
 
-### Mock 服务 (`apps/backend-mock/api/`)
-
-```
-api/
-└── iot/             # 物联网业务 Mock API
-    ├── device/      # 设备相关
-    ├── account/     # 账号相关
-    └── ...
-```
-
 ## 🎨 功能特性
 
 - ✅ **TypeScript** - 完整的类型支持
 - ✅ **国际化** - 中英文切换
 - ✅ **主题定制** - 深蓝色物联网风格主题
 - ✅ **响应式设计** - 适配各种屏幕尺寸
-- ✅ **Mock 数据** - 完整的 Mock API 支持
 - ✅ **表格组件** - 强大的表格功能（搜索、排序、导出）
 - ✅ **表单验证** - 完善的表单验证机制
 - ✅ **路由守卫** - 权限控制和登录验证
@@ -176,7 +162,7 @@ api/
 ## 🔄 数据流
 
 ```
-用户操作 → Vue 组件 → API 调用 → Mock 服务 → 响应数据 → Pinia Store → 组件更新
+用户操作 → Vue 组件 → API 调用 → 后端服务 → 响应数据 → Pinia Store → 组件更新
 ```
 
 ## 📄 许可证
