@@ -15,7 +15,7 @@ export default defineConfig(async () => {
         ...(isDev && {
           proxy: {
             '/api': {
-              target: 'http://192.168.3.214:8000',
+              target: 'http://f6f9f48a.natappfree.cc',
               changeOrigin: true,
             },
           },
