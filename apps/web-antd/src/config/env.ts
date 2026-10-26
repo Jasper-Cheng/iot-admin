@@ -1,8 +1,11 @@
 /**
- * 环境配置：切换 CURRENT_ENV 即切换 baseUrl
+ * 环境配置：根据构建模式自动切换 baseUrl
+ * - 生产构建（main / CI / Docker）：固定使用正式环境
+ * - 本地开发（dev）：使用测试环境
  */
-// 切换环境时修改此处：'test' | 'production'
-const CURRENT_ENV = 'production' as 'test' | 'production';
+const CURRENT_ENV: 'test' | 'production' = import.meta.env.PROD
+  ? 'production'
+  : 'test';
 
 const TEST_CONFIG = {
   baseUrl: 'http://212.129.243.155:8001/api',
