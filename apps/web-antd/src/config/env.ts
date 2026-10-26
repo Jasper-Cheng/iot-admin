@@ -3,7 +3,8 @@
  * - 生产构建（main / CI / Docker）：固定使用正式环境
  * - 本地开发（dev）：使用测试环境
  */
-const CURRENT_ENV: 'test' | 'production' = import.meta.env.PROD
+// 使用可选链：该文件也会被 vite.config 在 Node 环境加载，此时 import.meta.env 不存在
+const CURRENT_ENV: 'test' | 'production' = import.meta.env?.PROD
   ? 'production'
   : 'test';
 
