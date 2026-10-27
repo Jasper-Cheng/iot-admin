@@ -6,6 +6,46 @@
 
 物联网管理平台是一个功能完善的后台管理系统，提供设备管理、用户管理、数据统计等核心功能。系统采用最新的前端技术栈，具有完善的类型支持、国际化支持和主题定制能力。
 
+## 🖼️ 界面预览
+
+### 登录页
+
+手机号 + 密码登录，密码使用 RSA-OAEP(SHA256) 加密传输，并带滑块验证。
+
+![登录页](./docs/images/01-login.png)
+
+### 工作台
+
+展示未绑定设备、新增用户、告警、待处理反馈等核心指标，以及操作日志与待办反馈。
+
+![工作台](./docs/images/02-workspace.png)
+
+### 设备管理
+
+| 设备列表 | 物模型管理 |
+| --- | --- |
+| ![设备列表](./docs/images/03-device-list.png) | ![物模型管理](./docs/images/05-thing-model.png) |
+
+| 型号管理 | 意见反馈 |
+| --- | --- |
+| ![型号管理](./docs/images/04-device-model.png) | ![意见反馈](./docs/images/08-feedback.png) |
+
+### 账号管理
+
+| 管理员管理 | 用户管理 |
+| --- | --- |
+| ![管理员管理](./docs/images/07-admin-list.png) | ![用户管理](./docs/images/06-user-list.png) |
+
+### 系统管理
+
+| 家庭管理 | 系统消息 |
+| --- | --- |
+| ![家庭管理](./docs/images/10-family.png) | ![系统消息](./docs/images/09-notice.png) |
+
+### 操作日志
+
+![操作日志](./docs/images/11-operation-log.png)
+
 ## ✨ 核心功能
 
 ### 🎯 设备管理
@@ -94,6 +134,8 @@ pnpm dev:antd
 # 前端: http://localhost:5666
 ```
 
+> 接口地址在 [apps/web-antd/src/config/env.ts](./apps/web-antd/src/config/env.ts) 中按构建模式切换：本地开发使用测试环境，生产构建使用正式环境。
+
 ### 构建生产版本
 
 ```bash
@@ -106,8 +148,8 @@ pnpm preview:antd
 
 ## 🔐 默认账号
 
-- **用户名**: `vben`
-- **密码**: `123456`
+- **手机号**: `13700000000`
+- **密码**: `admin1234`
 
 ## 📁 目录说明
 
