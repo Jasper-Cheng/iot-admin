@@ -9,12 +9,12 @@ const CURRENT_ENV: 'test' | 'production' = import.meta.env?.PROD
   : 'test';
 
 const TEST_CONFIG = {
-  baseUrl: 'http://212.129.243.155:8001/api',
+  baseUrl: 'http://122.51.93.59:8001/api',
 };
 
 
 const PRODUCTION_CONFIG = {
-  baseUrl: 'http://212.129.243.155:8000/api', // 改为实际生产 API 地址
+  baseUrl: 'http://122.51.93.59:8000/api', // 改为实际生产 API 地址
 };
 
 const config = CURRENT_ENV === 'production' ? PRODUCTION_CONFIG : TEST_CONFIG;
